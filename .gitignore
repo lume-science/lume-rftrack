@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# setuptools_scm
+lume_rftrack/_version.py
+
+# pykern test output
+*_work/

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=75.0", "setuptools_scm[toml]>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    { name = "RadiaSoft LLC", email = "pip@radiasoft.net" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "pykern",
+    "h5py",
+    "lume-base",
+    "numpy",
+    "openpmd-beamphysics>=0.15.1",
+    "RF-Track",
+    "scipy",
+]
+description = "RF-Track implementation of LUME model classes for virtual accelerators"
+dynamic = ["version"]
+name = "lume-rftrack"
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://github.com/lume-science/lume-rftrack"
+
+[tool.setuptools.packages.find]
+include = ["lume_rftrack*"]
+
+[tool.setuptools_scm]
+version_file = "lume_rftrack/_version.py"
+
+[tool.ruff]
+# Reference and defaults: https://docs.astral.sh/ruff/configuration/
+line-length = 88
+indent-width = 4
+target-version = "py310"
+# Sirepo's exported scripts, kept as exported (see the example's README)
+extend-exclude = ["examples/awa-zone-twin/twin/sources"]
+
+[tool.ruff.lint]
+select = [
+  # Pycodestyle E errors: https://pycodestyle.pycqa.org/en/latest/intro.html
+  "E4",
+  "E7",
+  "E9",
+  # pyflakes F error codes:
+  # https://flake8.pycqa.org/en/latest/user/error-codes.html
+  "F",
+  # isort: import sorting
+  "I",
+  # pyupgrade: modernize syntax
+  "UP",
+  # ruff-specific rules
+  "RUF",
+]
