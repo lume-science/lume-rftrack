@@ -77,7 +77,7 @@ def test_quadrupole_k1():
             rftrack_util.twiss_bunch(rft, _PC_MEV, 200),
         )
         m.set({"Q1_k1": 3.0})
-        numpy.testing.assert_allclose(m.get("Q1_k1"), 3.0)
+        numpy.testing.assert_allclose(m.get(["Q1_k1"])["Q1_k1"], 3.0)
         i = m.simulator.initial_bunch.get_phase_space(_FIELDS)
         o = m.simulator.tracked_bunch.get_phase_space(_FIELDS)
         numpy.testing.assert_allclose(_slope(i, o, 0, 1), -3.0 * length, rtol=0.05)

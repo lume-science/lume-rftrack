@@ -42,8 +42,8 @@ def test_reset_restores_fodo_focusing():
     m.set({"QF_gradient": 0.0, "QD_gradient": 0.0})
     m.reset()
 
-    pkunit.pkeq(5.0, m.get("QF_gradient"))
-    pkunit.pkeq(-5.0, m.get("QD_gradient"))
+    pkunit.pkeq(5.0, m.get(["QF_gradient"])["QF_gradient"])
+    pkunit.pkeq(-5.0, m.get(["QD_gradient"])["QD_gradient"])
     pkunit.pkeq(sigma_x_fodo, m.simulator.tracked_bunch.get_phase_space("%x").std())
 
 
