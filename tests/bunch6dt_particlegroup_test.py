@@ -1,4 +1,4 @@
-"""lume_rftrack.rftrack ParticleGroup <-> Bunch6dT conversion
+"""lume_rftrack.utils ParticleGroup <-> Bunch6dT conversion
 (`bunch6dt_to_particlegroup()`/`particlegroup_to_bunch6dt()`).
 
 Treats the bunch as a genuine time snapshot: Bunch6dT's own `Z` <->

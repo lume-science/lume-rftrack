@@ -79,9 +79,13 @@ def test_volume_archive_round_trip():
         pkunit.pkeq("Screen", f["elements"]["1"].attrs["class"])
         # the field map array went in as a real dataset under the
         # shared "field_maps" group, referenced by the element's own
-        # "ez" attr ("@<md5>") rather than duplicated inline -- see
-        # lume_rftrack.archive.archive()'s own docstring (_dedupe_field_maps)
-        pkunit.pkeq(21, len(f["field_maps"][f["elements"]["0"].attrs["ez"][1:]]))
+        # constructor "Ez" attr ("@<md5>") rather than duplicated inline --
+        # see lume_rftrack.archive.archive()'s own docstring
+        # (_dedupe_field_maps)
+        pkunit.pkeq(
+            21,
+            len(f["field_maps"][f["elements"]["0"]["constructor"].attrs["Ez"][1:]]),
+        )
 
     pkunit.pkeq(
         10.0, original.beamline[0].get_phid(), "archive() must not mutate beamline"

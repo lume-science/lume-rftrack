@@ -54,36 +54,6 @@ def test_quadrupole_gradient():
         numpy.testing.assert_allclose(_slope(i, o, 2, 3), -kl, rtol=0.05)
 
 
-def test_quadrupole_k1():
-    """K1 [1/m^2] is the normalized strength: a positive K1 focuses in x
-    (and defocuses in y) by about -K1 L per unit offset, whatever the
-    particle's charge and the quadrupole's length."""
-    import math
-
-    import numpy
-    import RF_Track as rft
-    import rftrack_util
-
-    from lume_rftrack.rftrack import build_model
-
-    for length in (0.1, 0.2):
-        q = rft.Quadrupole(length, math.nan, 0.0)
-        q.set_name("Q1")
-        b = rft.Lattice()
-        b.append(q)
-        m = build_model(
-            [dict(kind="quadrupole_k1", name="Q1")],
-            b,
-            rftrack_util.twiss_bunch(rft, _PC_MEV, 200),
-        )
-        m.set({"Q1_k1": 3.0})
-        numpy.testing.assert_allclose(m.get(["Q1_k1"])["Q1_k1"], 3.0)
-        i = m.simulator.initial_bunch.get_phase_space(_FIELDS)
-        o = m.simulator.tracked_bunch.get_phase_space(_FIELDS)
-        numpy.testing.assert_allclose(_slope(i, o, 0, 1), -3.0 * length, rtol=0.05)
-        numpy.testing.assert_allclose(_slope(i, o, 2, 3), 3.0 * length, rtol=0.05)
-
-
 def test_screen_size():
     """A Screen's width and height are in meters (not mm, as the RF-Track
     reference manual says): it records the particles with

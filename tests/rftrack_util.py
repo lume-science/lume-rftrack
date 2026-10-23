@@ -1,4 +1,4 @@
-"""Bunches and beamlines shared by the lume_rftrack.rftrack tests
+"""Bunches and beamlines shared by the lume_rftrack tests
 
 Kept out of the ``*_test.py`` files so no test imports another's helpers.
 """

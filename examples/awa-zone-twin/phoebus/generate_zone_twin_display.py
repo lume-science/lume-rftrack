@@ -12,23 +12,20 @@ the same file serves every solenoid, cavity, etc., just loaded with
 different macro values. A button writes its element's name to the local
 PV `loc://selected_element`, and a rule on each embedded widget shows it
 only while that PV holds its element's name. A screen shows `screen_view.bob`, an `image`
-widget on its own `<name>_image` PV (a 2D histogram `Zone1Model`/
-`Zone2Model` compute from `get_bunch_at_screens()`). A bare drift is
+widget on its own `<name>_image` PV (a 2D histogram each zone computes
+from `get_bunch_at_screens()`). A bare drift is
 not drawn at all.
 
-Positions and widths come straight from `zone_model`'s own loaded
-`ZONE1_MODULE.ELEMENTS`/`ZONE2_MODULE.ELEMENTS` -- the exact
-generated element tables `zone_model.py` itself builds from. Each element's
-`elemedge` is each element's *absolute* position for zone1 (a Volume,
-placed at arbitrary, even overlapping z) and each element's *start*
-position for zone2 (a Lattice, sequential) -- `l` (when an element has
-one; cavities/solenoids don't, their length instead comes from their
-field-map file at build time) turns a start into a center for the
-latter. The macro values (which PV each button's editor controls) are
-named by `lume_rftrack.rftrack.variable_name()`, as `build_model()` names its
-variables -- `solenoid_fieldmap`'s `actions.SCALE_FACTOR` is the one
-parameter `Zone1Model` adds itself. So the display follows the code
-on both counts. Run `python generate_zone_twin_display.py` to
+Positions, widths and kinds come straight from the beamlines
+`zone_model`'s own loaded `ZONE1_MODULE`/`ZONE2_MODULE` build -- the same
+ones `zone_model.py` tracks -- each element's kind from its RF-Track
+class. A zone1 element (in a Volume, placed at arbitrary, even
+overlapping z) is drawn at its absolute position; a zone2 element (in a
+Lattice, sequential) at its center. The macro values (which PV each
+button's editor controls) are named by
+`lume_rftrack.model.variable_name()`, as `build_model()` and the zone
+models name their variables. So the display follows the code on both
+counts. Run `python generate_zone_twin_display.py` to
 regenerate; do not edit the `.bob` files by hand.
 """
 
@@ -38,10 +35,11 @@ import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+import RF_Track as rft
 from pykern.pkcollections import PKDict
 
-import lume_rftrack.rftrack
-from lume_rftrack.units import UNITS
+import lume_rftrack.model
+import lume_rftrack.units
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "twin"))
 import actions
@@ -52,8 +50,8 @@ from zone_model import (
     screen_names,
 )
 
-ZONE1_ELEMENTS = ZONE1_MODULE.ELEMENTS
-ZONE2_ELEMENTS = ZONE2_MODULE.ELEMENTS
+ZONE1_BEAMLINE = ZONE1_MODULE.build_beamline()
+ZONE2_BEAMLINE = ZONE2_MODULE.build_beamline()
 
 DEFAULT_PREFIX = (
     "AWA:SIM:"  # the PV prefix serve.py uses; the display macro P replaces it
@@ -78,20 +76,14 @@ COLORS = PKDict(
     screen=(0, 190, 120),
 )
 
-# The generated per-element `kind` string -> this display's drawing group
-# (color/editor). Anything not listed (drift, bpm, rbend, ...) isn't
-# drawn at all -- neither zone uses the ones left out, but the mapping
-# only covers what it needs to, not every kind _build_element() knows.
-_KIND_GROUP = {
-    "cavity_analytic": "cavity",
-    "cavity_fieldmap": "cavity",
-    "cavity_fieldmap_2d": "cavity",
-    "solenoid_analytic": "solenoid",
-    "solenoid_fieldmap": "solenoid",
-    "corrector": "corrector",
-    "quadrupole_k1": "quadrupole",
-    "quadrupole_gradient": "quadrupole",
-    "screen": "screen",
+# RF-Track class -> this display's drawing group (color/editor). Anything
+# not listed (Drift, Bpm, SBend, ...) isn't drawn at all.
+_CLASS_GROUP = {
+    "Corrector": "corrector",
+    "Quadrupole": "quadrupole",
+    "RF_FieldMap_1d": "cavity",
+    "Screen": "screen",
+    "Static_Magnetic_FieldMap_1d": "solenoid",
 }
 
 # The PV the element buttons write and the embedded editors' rules watch.
@@ -108,7 +100,7 @@ _EDITORS = {
     "solenoid": (
         "Solenoid",
         "solenoid_controls.bob",
-        [("Field scale factor", "SCALE", actions.SCALE_FACTOR, "exponential")],
+        [("Field scale factor", "SCALE", "scaling_factor", "exponential")],
     ),
     # POWER is RF_Track's own P_actual, in W: the field amplitude
     # scales as sqrt(P_actual / P_map). (build_model() has no live
@@ -117,7 +109,7 @@ _EDITORS = {
         "Cavity",
         "cavity_controls.bob",
         [
-            ("Power", "POWER", "p_actual", "decimal"),
+            ("Power", "POWER", "P_actual", "decimal"),
             ("Phase", "PHASE", "phid", "decimal"),
         ],
     ),
@@ -125,26 +117,34 @@ _EDITORS = {
         "Corrector",
         "corrector_controls.bob",
         [
-            ("Horizontal", "H", "hkick", "decimal"),
-            ("Vertical", "V", "vkick", "decimal"),
+            ("Horizontal", "H", "strength_x", "decimal"),
+            ("Vertical", "V", "strength_y", "decimal"),
         ],
     ),
     "quadrupole": (
         "Quadrupole",
         "quad_controls.bob",
-        [("Strength k1", "K1", "k1", "decimal")],
+        [
+            ("Strength K1", "K1", "K1", "decimal"),
+            ("Gradient", "GRADIENT", "gradient", "decimal"),
+        ],
     ),
 }
 
 
-def _element_macros(group, e):
-    """`{macro: variable name}` for `e`'s own editor. `NAME` is the
-    element's own name, shown in the editor's title. Both zones' cavities
-    are field maps, so each has a `p_actual` (an analytic cavity has none).
+# group -> the RF-Track class its editor's units are looked up for
+# (lume_rftrack.units.unit())
+_GROUP_CLASS = {g: c for c, g in _CLASS_GROUP.items()}
+
+
+def _element_macros(group, name):
+    """`{macro: variable name}` for element `name`'s own editor. `NAME` is
+    the element's own name, shown in the editor's title. Both zones'
+    cavities are field maps, so each has a `P_actual`.
     """
-    res = {"NAME": e.name}
+    res = {"NAME": name}
     for _, macro, parameter, _ in _EDITORS[group][2]:
-        res[macro] = lume_rftrack.rftrack.variable_name(e.name, parameter)
+        res[macro] = lume_rftrack.model.variable_name(name, parameter)
     return res
 
 
@@ -316,63 +316,61 @@ class _Display:
         )
 
 
-# Visual-only width for a kind with no `l` of its own (cavities/
-# solenoids: their real length comes from a field-map file at build
-# time, not anything in ELEMENTS) -- a schematic approximation, not a
-# metrology-grade drawing.
+# Visual-only width of a drawn cavity, solenoid or screen (a field map's
+# real length includes its fringe field, and overlaps its neighbors') -- a
+# schematic approximation, not a metrology-grade drawing. Every other
+# group is drawn at its element's length.
 _DISPLAY_WIDTH_M = {"cavity": 0.3, "solenoid": 0.15, "screen": 0.05}
 
 
 def _zone1_layout():
-    """`[(s_center, width_m, group, element_dict), ...]` for
-    `ZONE1_ELEMENTS`, plus zone1's own nominal length (its own
+    """`[(s_center, width_m, group, name), ...]` for `ZONE1_BEAMLINE`,
+    plus zone1's own nominal length (its own
     `SETTINGS.tracking_range_m[1]`, not guessed from the last element's
     position -- a Volume's elements aren't necessarily stored in z
-    order). `elemedge` is each element's *absolute* z position already
-    (Volume/absolute mode), not a start position to accumulate.
+    order). Each element is drawn at its *absolute* z position, its
+    Volume placement (`get_offsets()`, in mm).
     """
     layout = []
-    for e in ZONE1_ELEMENTS:
-        group = _KIND_GROUP.get(e.kind)
+    for i in range(ZONE1_BEAMLINE.size()):
+        e = ZONE1_BEAMLINE[i]
+        group = _CLASS_GROUP.get(type(e).__name__)
         if group is None:
             continue
-        width = e.get("l") or _DISPLAY_WIDTH_M.get(group, 0.1)
-        layout.append((e.elemedge, width, group, e))
+        z = float(e.get_offsets().get_origin().flatten()[2]) / 1000.0
+        layout.append((z, _width(group, e), group, e.get_name()))
     return layout, float(ZONE1_MODULE.SETTINGS.tracking_range_m[1])
 
 
 def _zone2_layout(start_s):
-    """`[(s_center, width_m, group, element_dict), ...]` for
-    `ZONE2_ELEMENTS`, offset by `start_s` (zone1's own end) to make one
-    continuous axis for the whole twin. `elemedge` is each element's
-    *start* position (Lattice/sequential mode) -- `l` (present for
-    every zone2 kind drawn: corrector, quadrupole; a screen has none,
-    treated as a zero-width marker at its own elemedge) turns that into
-    a center. A drift is skipped (never drawn).
+    """`[(s_center, width_m, group, name), ...]` for `ZONE2_BEAMLINE`,
+    offset by `start_s` (zone1's own end) to make one continuous axis for
+    the whole twin. A Lattice is sequential, so each element starts where
+    the previous one ended, and is drawn at its center (a screen, of no
+    length, as a marker at its position). A drift is skipped (never drawn).
     """
     layout = []
     end = start_s
-    for e in ZONE2_ELEMENTS:
-        end = max(end, start_s + float(e.elemedge) + float(e.get("l", 0.0)))
-        group = _KIND_GROUP.get(e.kind)
-        if group is None:
-            continue
-        width = e.get("l") or _DISPLAY_WIDTH_M.get(group, 0.1)
-        layout.append((start_s + float(e.elemedge) + width / 2.0, width, group, e))
+    for i in range(ZONE2_BEAMLINE.size()):
+        e = ZONE2_BEAMLINE[i]
+        group = _CLASS_GROUP.get(type(e).__name__)
+        if group is not None:
+            w = _width(group, e)
+            layout.append((end + w / 2.0, w, group, e.get_name()))
+        end += e.get_length()
     return layout, end
 
 
-def _draw_element(d, px_per_m, s_center, width_m, group, e):
+def _draw_element(d, px_per_m, s_center, width_m, group, name):
     x = X0 + int(s_center * px_per_m) - max(int(width_m * px_per_m), 10) // 2
     w = max(int(width_m * px_per_m), 10)
-    name = e.name
     if group == "screen":
         # not clickable: a screen's image is selected from the ScreenTabs
         # navtabs strip below, not from the floor plan.
         d.rect(f"rect_{name}", x, AXIS_Y - 30, 4, 60, COLORS.screen)
         d.label(f"lbl_{name}", name, x - 6, AXIS_Y - 95, 16, 56, rotated=True)
         return
-    macros = _element_macros(group, e)
+    macros = _element_macros(group, name)
     tooltip = f"{name}: " + ", ".join(
         f"{m}={v}" for m, v in macros.items() if m != "NAME"
     )
@@ -405,10 +403,8 @@ def build() -> str:
     # beam axis
     d.rect("axis", X0, AXIS_Y - 1, WIDTH_PX, 2, (0, 0, 0))
 
-    for s_center, width_m, group, e in zone1_elements:
-        _draw_element(d, px_per_m, s_center, width_m, group, e)
-    for s_center, width_m, group, e in zone2_elements:
-        _draw_element(d, px_per_m, s_center, width_m, group, e)
+    for s_center, width_m, group, name in zone1_elements + zone2_elements:
+        _draw_element(d, px_per_m, s_center, width_m, group, name)
 
     # zone1/zone2 boundary marker
     boundary_x = X0 + int(zone1_length * px_per_m)
@@ -451,7 +447,7 @@ def build() -> str:
     # embedded display in place rather than opening a new window.
     d.label("ScreenTabsHeader", "Screen images", X0, y, 300, 22, bold=True)
     y += 28
-    screens = screen_names(ZONE1_ELEMENTS) + screen_names(ZONE2_ELEMENTS)
+    screens = screen_names(ZONE1_BEAMLINE) + screen_names(ZONE2_BEAMLINE)
     tabs = [
         (
             name,
@@ -483,19 +479,19 @@ def build() -> str:
     d.placeholder(
         "EditorHint", "Click an element above to edit it.", ex, y, _EDITOR_WIDTH
     )
-    for _, _, group, e in zone1_elements + zone2_elements:
+    for _, _, group, name in zone1_elements + zone2_elements:
         if group == "screen":
             continue
         _, file, fields = _EDITORS[group]
         d.embedded(
-            f"editor_{e.name}",
+            f"editor_{name}",
             ex,
             y,
             _EDITOR_WIDTH,
             _editor_height(fields),
             file,
-            _element_macros(group, e),
-            e.name,
+            _element_macros(group, name),
+            name,
         )
 
     d.height = y + _SCREEN_VIEW_HEIGHT + 20
@@ -510,7 +506,8 @@ def _write_editor_templates(out_dir: Path) -> None:
     kind.
     """
     templates = {
-        file: _editor(title, fields) for title, file, fields in _EDITORS.values()
+        file: _editor(group, title, fields)
+        for group, (title, file, fields) in _EDITORS.items()
     }
     templates["screen_view.bob"] = _screen_view()
     for filename, xml in templates.items():
@@ -518,16 +515,17 @@ def _write_editor_templates(out_dir: Path) -> None:
 
 
 def _editor_height(fields) -> int:
-    """The height of `_editor(title, fields)`."""
+    """The height of `_editor(group, title, fields)`."""
     return 50 + 66 * len(fields) + 10
 
 
-def _editor(title: str, fields) -> str:
+def _editor(group: str, title: str, fields) -> str:
     """A small editor `.bob` with, for each `(label, macro, parameter, format)`
     in `fields`, a label, a text entry (it writes the PV once, on Enter,
     so one edit starts one simulation), its unit, and a readback, all on
     `pva://$(P=AWA:SIM:)$(<macro>)`. `format` is `"decimal"` or
-    `"exponential"`. `$(NAME)` (set by the embedding widget) is the
+    `"exponential"`, and each unit is that of `group`'s RF-Track class.
+    `$(NAME)` (set by the embedding widget) is the
     element's name and appears in the title.
     """
     format_index = {"decimal": 1, "exponential": 2}
@@ -552,7 +550,7 @@ def _editor(title: str, fields) -> str:
   </widget>
   <widget type="label" version="2.0.0">
     <name>Unit_{macro}</name>
-    <text>{escape(_unit(parameter))}</text>
+    <text>{escape(_unit(group, parameter))}</text>
     <x>280</x><y>{y}</y><width>70</width><height>25</height>
   </widget>"""
         )
@@ -629,9 +627,20 @@ def _screen_view() -> str:
 """
 
 
-def _unit(parameter):
-    """The unit of a variable for `parameter`; the scale factor has none."""
-    return "" if parameter == actions.SCALE_FACTOR else UNITS[parameter]
+def _unit(group, parameter):
+    """The unit of `group`'s variable for `parameter` (a vector
+    attribute's component, e.g. `strength_x`, has the attribute's), or
+    "" for a dimensionless one (e.g. `scaling_factor`)."""
+    u = lume_rftrack.units.unit(
+        getattr(rft, _GROUP_CLASS[group]),
+        parameter[:-2] if parameter[-2:] in ("_x", "_y") else parameter,
+    )
+    return "" if u in (None, "1") else u
+
+
+def _width(group, element):
+    """The drawn width [m] of `element`, in `group`"""
+    return _DISPLAY_WIDTH_M.get(group) or element.get_length()
 
 
 def main(argv: list[str] | None = None) -> None:

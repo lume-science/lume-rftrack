@@ -42,7 +42,9 @@ def test_field_map_dedup():
         # one shared dataset, not three byte-for-byte duplicates
         pkunit.pkeq(1, len(f["field_maps"]))
         refs = {
-            f["elements"][str(i)].attrs["name"]: f["elements"][str(i)].attrs["ez"]
+            f["elements"][str(i)].attrs["name"]: f["elements"][str(i)][
+                "constructor"
+            ].attrs["Ez"]
             for i in range(3)
         }
         pkunit.pkeq(3, len(refs))

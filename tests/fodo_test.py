@@ -1,4 +1,4 @@
-"""lume_rftrack.rftrack test against a realistic lattice: an X-band linac FODO
+"""lume_rftrack.model test against a realistic lattice: an X-band linac FODO
 cell, built directly from RF_Track's native API
 (one FODO period: D0, C1, C2, QF, C3, C4, QD; analytic standing-wave
 `RF_FieldMap_1d` cavities, space charge off, so this has no external
@@ -72,18 +72,10 @@ def test_set_matches_direct_change():
 
 
 def _build_model():
-    from lume_rftrack.rftrack import build_model
+    from lume_rftrack.model import build_model
 
     s = _simulator()
-    return build_model(
-        [
-            dict(kind="quadrupole_gradient", name="QF"),
-            dict(kind="quadrupole_gradient", name="QD"),
-        ]
-        + [dict(kind="cavity_fieldmap", name=c) for c in ("C1", "C2", "C3", "C4")],
-        s.beamline,
-        s.initial_bunch,
-    )
+    return build_model(s.beamline, s.initial_bunch)
 
 
 def _changed(change):

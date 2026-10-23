@@ -1,6 +1,6 @@
 """RFTrackSimulator: wraps a native RF-Track beamline + bunch
 
-The "simulator" `lume_rftrack.rftrack.LUMERFTrackModel`
+The "simulator" `lume_rftrack.model.LUMERFTrackModel`
 (a `lume.actions.ActionModel`) wraps and every `lume_rftrack.actions`
 action variable operates on. `archive()`/`load_archive()` delegate to
 `lume_rftrack.archive`, which holds the actual HDF5 serialization.
@@ -65,19 +65,18 @@ class RFTrackSimulator:
 
         archive_module.load_archive(self, path)
 
-    def p_over_q(self):
-        """The initial bunch's mean momentum per unit charge [MeV/c per e],
-        negative for electrons: the P/Q that RF-Track's `get_K1()`/`set_K1()`
-        convert a quadrupole's gradient with.
-        """
-        p, q = self.initial_bunch.get_phase_space("%P %Q").mean(axis=0)
-        return float(p / q)
-
     def track(self):
         """Track `initial_bunch` through `beamline`, storing the result.
 
         `beamline.track()` does not mutate `initial_bunch` or the beamline's
         elements, so this is safe to call repeatedly after changing element
         attributes via the writable action variables.
+
+        With no `initial_bunch` (a staged model's stage still waiting for
+        the stage before it), there is nothing to track: `tracked_bunch`
+        becomes `None`.
         """
+        if self.initial_bunch is None:
+            self.tracked_bunch = None
+            return
         self.tracked_bunch = self.beamline.track(self.initial_bunch)

@@ -19,25 +19,6 @@ from pykern.pkcollections import PKDict
 # BPM's total charge.
 BPM_COLUMNS = ("s", "x", "y", "charge")
 
-# Every element spec `kind` that `lume_rftrack.rftrack.build_model()` accepts;
-# it rejects any other.
-ELEMENT_KINDS = frozenset(
-    (
-        "bpm",
-        "cavity_analytic",
-        "cavity_fieldmap",
-        "cavity_fieldmap_2d",
-        "corrector",
-        "drift",
-        "quadrupole_gradient",
-        "quadrupole_k1",
-        "rbend",
-        "screen",
-        "solenoid_analytic",
-        "solenoid_fieldmap",
-    )
-)
-
 # Columns of the files `save_particles()` and `save_screens()` write, in
 # base SI units; `weight` is each macroparticle's charge [C].
 PHASE_SPACE_COLUMNS = (

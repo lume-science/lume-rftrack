@@ -30,3 +30,6 @@ jobs:
       - name: Run the AWA zone twin tests
         working-directory: examples/awa-zone-twin
         run: pykern test tests
+      - name: Run the X-band linac tests
+        working-directory: examples/xband-linac
+        run: pykern test tests

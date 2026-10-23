@@ -36,19 +36,6 @@ def test_display_variables_are_served():
     )
 
 
-def test_kinds_are_element_kinds():
-    _add_paths()
-    import generate_zone_twin_display
-    from pykern import pkunit
-
-    import lume_rftrack.utils
-
-    pkunit.pkeq(
-        set(),
-        set(generate_zone_twin_display._KIND_GROUP) - lume_rftrack.utils.ELEMENT_KINDS,
-    )
-
-
 def _add_paths():
     for d in ("phoebus", "twin"):
         p = str(_EXAMPLE_DIR.join(d))

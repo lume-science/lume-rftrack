@@ -1,8 +1,9 @@
-"""lume_rftrack.rftrack archive()/load_archive() coverage for
+"""lume_rftrack.archive archive()/load_archive() coverage for
 Static_Magnetic_FieldMap_1d (a field-map SOLENOID) specifically.
 
 There's no direct Bz-array getter for this class (unlike RF_FieldMap_1d's
-get_Ez()), so the serializer samples get_field() instead -- and
+get_Ez()), so `_constructor_args_static_magnetic_fieldmap_1d()` samples
+get_field() instead -- and
 get_field(x, y, z, t)'s coordinate arguments are documented (RF-Track
 reference manual, section 5.1.2) as millimeters, not meters like every
 other length-valued getter/setter in this module (get_length(),
@@ -32,17 +33,20 @@ def test_peak_field_matches_construction_input():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _serialize_static_magnetic_fieldmap_1d
+    from lume_rftrack.archive import _constructor_args_static_magnetic_fieldmap_1d
 
     sol, bz_in = _build_solenoid(rft, numpy, peak_t=0.3)
-    d = _serialize_static_magnetic_fieldmap_1d(sol)
+    # restored by set_scaling_factor(), so not in the sampled map
+    sol.set_scaling_factor(2.0)
+    d = _constructor_args_static_magnetic_fieldmap_1d(sol)
 
+    pkunit.pkeq(2.0, sol.get_scaling_factor())
     pkunit.pkok(
-        abs(numpy.abs(d["bz"]).max() - 0.3) < 1e-6,
+        abs(numpy.abs(d.Bz).max() - 0.3) < 1e-6,
         "expected peak sampled field near 0.3 T, got {}",
-        numpy.abs(d["bz"]).max(),
+        numpy.abs(d.Bz).max(),
     )
-    peak_idx = int(numpy.argmax(numpy.abs(d["bz"])))
+    peak_idx = int(numpy.argmax(numpy.abs(d.Bz)))
     pkunit.pkok(
         abs(peak_idx - len(bz_in) // 2) <= 1,
         "expected the peak near the middle of the element, got index {} of {}",
@@ -63,6 +67,7 @@ def test_archive_round_trip():
     path = str(pkunit.empty_work_dir().join("solenoid.h5"))
 
     sol, _ = _build_solenoid(rft, numpy)
+    sol.set_scaling_factor(1.5)
     v = rft.Volume()
     v.add(sol, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     v.set_s0(0.0)
@@ -74,7 +79,9 @@ def test_archive_round_trip():
         pkunit.pkeq("Static_Magnetic_FieldMap_1d", f["elements"]["0"].attrs["class"])
         # a shared "field_maps" dataset, referenced by "@<md5>" --
         # see RFTrackSimulator.archive()'s own docstring
-        bz_archived = f["field_maps"][f["elements"]["0"].attrs["bz"][1:]][()]
+        bz_archived = f["field_maps"][
+            f["elements"]["0"]["constructor"].attrs["Bz"][1:]
+        ][()]
 
     reloaded = RFTrackSimulator()
     reloaded.load_archive(path)

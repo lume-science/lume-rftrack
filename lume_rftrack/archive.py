@@ -1,17 +1,31 @@
-"""HDF5 archive format for lume_rftrack.rftrack
+"""HDF5 archive format for lume_rftrack.simulator.RFTrackSimulator
 
 `RFTrackSimulator.archive()`/`load_archive()` (`lume_rftrack.simulator`)
 delegate to :func:`archive`/:func:`load_archive` here, and
 :func:`read_archive` reads an archive without RF-Track (e.g. for another
 program to import it). This module holds the actual beamline + bunch <->
-HDF5 serialization, covering only the
-element classes that have a `_serialize_<class>()` function -- not a
-bespoke format of its own, just RF-Track's own native class/attribute
-names, written as plain, self-describing HDF5 any tool can read.
+HDF5 serialization -- not a bespoke format of its own, just RF-Track's
+own native class/attribute names, written as plain, self-describing HDF5
+any tool can read.
+
+RF-Track elements can't be pickled and have no save/load API, so an
+element is archived generically, as RF-Track itself exposes it: every
+`get_X()`/`set_X()` pair whose getter takes no arguments, restored by
+building the class with no arguments and calling each `set_X()`. A class
+whose state isn't all settable that way (a field map's data, a pillbox's
+cell count, ...) also has a `_constructor_args_<class>()`, giving the
+arguments to build it with, in order.
+`archive()` rebuilds every element in memory and compares its field with
+the original's, so an element that wouldn't come back the same is
+refused instead of archived wrong.
+
+Like lume-impact's and lume-genesis' archives, it holds the last run's
+output as well as its input: the tracked bunch, if there is one, so a
+loaded simulator has its final particles without tracking again.
 """
 
+import contextlib
 import importlib.metadata
-import math
 
 import beamphysics
 import h5py
@@ -20,7 +34,7 @@ import pykern.pkinspect
 from beamphysics.units import pmd_unit, write_unit_h5
 from pykern.pkcollections import PKDict
 
-from lume_rftrack.units import UNITS
+import lume_rftrack.units
 from lume_rftrack.utils import (
     bunch6d_to_particlegroup,
     bunch6dt_to_particlegroup,
@@ -28,7 +42,30 @@ from lume_rftrack.utils import (
     particlegroup_to_bunch6dt,
 )
 
-_CAVITY_CLASSES = frozenset(("Pillbox_Cavity", "RF_FieldMap_1d", "RF_FieldMap_2d"))
+# Element accessors archived by name rather than generically: `name` and
+# `t0` (only when `t0_is_set()`), the aperture (whose setter is
+# `set_aperture(x, y, shape)`), and `offsets` (the Lattice's
+# `elements_offsets` or the Volume position instead)
+_NOT_GENERIC = frozenset(
+    ("aperture_shape", "aperture_x", "aperture_y", "name", "offsets", "t0")
+)
+
+# Class -> the class whose constructor functions it shares (same
+# constructor and getters; `_CINT` is cubic rather than linear
+# interpolation)
+_SAME_CONSTRUCTOR = PKDict(
+    RF_FieldMap_1d_CINT="RF_FieldMap_1d",
+    RF_FieldMap_2d_CINT="RF_FieldMap_2d",
+    Static_Magnetic_FieldMap_1d_CINT="Static_Magnetic_FieldMap_1d",
+    Static_Magnetic_FieldMap_2d_CINT="Static_Magnetic_FieldMap_2d",
+)
+
+# Class -> attributes set again, in this order, after all the others:
+# an SBend's angle, field, curvature and focusing are interdependent, so
+# setting them alphabetically leaves the wrong angle
+_SET_LAST = PKDict(
+    SBend=("length", "P_over_Q", "angle", "E1", "E2", "hgap", "K1"),
+)
 
 # Volume tracking settings archive() records and load_archive() restores
 _VOLUME_INTEGRATOR_ATTRS = (
@@ -43,16 +80,18 @@ _VOLUME_INTEGRATOR_ATTRS = (
 
 def archive(simulator, path, autophase=None, space_charge=None):
     """Write `simulator.beamline` and `simulator.initial_bunch` to `path`
-    as HDF5 (called as `RFTrackSimulator.archive()`).
+    as HDF5 (called as `RFTrackSimulator.archive()`), and
+    `simulator.tracked_bunch` if there is one.
 
     `path` is also a valid standalone openPMD particle file (readable
     with `beamphysics.ParticleGroup(h5=path)`). The bunch comes back as
     the same macroparticles, not a new realization; the random seed is
-    not recorded. Each element's aperture and step counts, a Lattice's
-    element offsets and a Volume's integrator settings are recorded too,
-    and an autophased RF element keeps its phase correction, so a
-    reloaded beamline tracks identically without calling `autophase()`
-    again. Space charge is recorded as settings only: after loading, call
+    not recorded. Each element's aperture and settable attributes
+    (including its step counts), a Lattice's element offsets and a
+    Volume's integrator settings are recorded too, and an autophased RF
+    element keeps its phase correction, so a reloaded beamline tracks
+    identically without calling `autophase()` again. Space charge is
+    recorded as settings only: after loading, call
     `RFTrackSimulator.apply_space_charge()` to use it.
 
     Args:
@@ -60,7 +99,7 @@ def archive(simulator, path, autophase=None, space_charge=None):
             `Bunch6d` or `Bunch6dT` to write
         path (str): file to write
         autophase (bool): whether autophase was used; `None` infers it
-            from the cavities' `t0` [None]
+            from the RF elements' `t0` [None]
         space_charge (dict): `{"kind": "p2p"}` or `{"kind": "pic",
             "dt_mm": float, "grid": (nx, ny, nz), "mirror_m": float,
             "smooth": float}`; `None` uses `simulator.space_charge`
@@ -70,35 +109,50 @@ def archive(simulator, path, autophase=None, space_charge=None):
             `simulator.space_charge = None` first.
 
     Raises:
-        NotImplementedError: an element class with no serializer, or a
-            Volume element with a non-identity rotation
+        NotImplementedError: an element that can't be rebuilt with the
+            same field (see the module docstring), or a Volume element
+            with a non-identity rotation
 
     The file is plain HDF5, readable without this module:
 
     - root attrs: `software`, `lume_rftrack_version`, `rftrack_version`
-      (RF-Track's own), `bunch_type`, `beamline_class`, `autophase`, and for a Volume `s0`/`s1` and its integrator settings
-      (`dt_mm`, `tt_dt_mm`, `odeint_algorithm`, `odeint_epsabs`,
-      `odeint_epsrel`, `t_max_mm`)
+      (RF-Track's own), `bunch_type`, `bunch_t_mm` (a `Bunch6dT`'s clock,
+      which its particles don't carry), `beamline_class`, `autophase`, and
+      for a Volume `s0`/`s1` and its integrator settings (`dt_mm`,
+      `tt_dt_mm`, `odeint_algorithm`, `odeint_epsabs`, `odeint_epsrel`,
+      `t_max_mm`)
     - `elements_offsets`: for a Lattice, one row per element, as
       `Lattice.set_elements_offsets()` takes them
-    - `elements/<i>`: one group per element, using RF-Track's own
-      class and attribute names
-    - `field_maps`: each unique array-valued field once, keyed by md5
-      and referenced from an element as `"@<md5>"`
+    - `elements/<i>`: one group per element, with attrs `class`, `name`,
+      the aperture, `t0` if set and, in a Volume, its position `x`/`y`/
+      `z`; an `attributes` group of its `get_X()`/`set_X()` values; and,
+      for a class that needs them, a `constructor` group of its
+      constructor arguments, named in order by the `constructor_args` attr
+    - `field_maps`: each unique constructor array (a field map) once,
+      keyed by md5 and referenced from a `constructor` as `"@<md5>"`
     - `space_charge`: the settings above, if any
-    - `units`: the unit of each element field
-    - `particles`: the bunch, as openPMD
+    - `units`: the unit of each element value, laid out like `elements`
+    - `particles`: the initial bunch, as openPMD
+    - `output`: only if the simulator has tracked, the tracked bunch:
+      attrs `bunch_type` and `bunch_t_mm`, as at the root, and its
+      `particles`, as openPMD
     """
     import RF_Track as rft
 
     kind = type(simulator.beamline).__name__
-    elements, field_maps = _dedupe_field_maps(
-        [
-            _element_to_attrs(simulator.beamline[i], kind)
-            for i in range(simulator.beamline.size())
-        ]
-    )
+    elements = []
+    for i in range(simulator.beamline.size()):
+        e = simulator.beamline[i]
+        d = _element_to_attrs(rft, e, kind)
+        _assert_restorable(rft, e, d)
+        elements.append(d)
+    elements, field_maps = _dedupe_field_maps(elements)
     particle_group, bunch_type = _bunch_to_particlegroup(simulator.initial_bunch)
+    tracked = (
+        None
+        if simulator.tracked_bunch is None
+        else _bunch_to_particlegroup(simulator.tracked_bunch)
+    )
     if autophase is None:
         autophase = _infer_autophase(elements)
     if space_charge is None:
@@ -112,6 +166,7 @@ def archive(simulator, path, autophase=None, space_charge=None):
         f.attrs["lume_rftrack_version"] = importlib.metadata.version("lume-rftrack")
         f.attrs["rftrack_version"] = rft.RF_TRACK_VERSION
         f.attrs["bunch_type"] = bunch_type
+        _write_bunch_time(f, simulator.initial_bunch)
         f.attrs["beamline_class"] = kind
         f.attrs["autophase"] = int(autophase)
         if space_charge is not None:
@@ -155,8 +210,17 @@ def archive(simulator, path, autophase=None, space_charge=None):
                 fm.create_dataset(h, data=arr)
         units_elements = f.create_group("units").create_group("elements")
         for i, element in enumerate(elements):
-            _write_field_units_h5(units_elements.create_group(str(i)), element.keys())
+            _write_field_units_h5(
+                units_elements.create_group(str(i)),
+                element,
+                getattr(rft, element["class"]),
+            )
         particle_group.write(f)
+        if tracked is not None:
+            o = f.create_group("output")
+            o.attrs["bunch_type"] = tracked[1]
+            _write_bunch_time(o, simulator.tracked_bunch)
+            tracked[0].write(o.create_group("particles"))
 
 
 def load_archive(simulator, path):
@@ -164,7 +228,9 @@ def load_archive(simulator, path):
     contents of `path` (as written by `archive()`; called as
     `RFTrackSimulator.load_archive()`), rebuilding a new `rft.Lattice`
     or `rft.Volume` and the exact same macroparticles `archive()`
-    wrote. Clears `simulator.tracked_bunch`.
+    wrote. `simulator.tracked_bunch` becomes the archived tracked bunch,
+    or `None` if there was none; the rebuilt beamline itself hasn't
+    tracked (its screens and transport table are empty).
 
     Also sets `simulator.autophase`/`simulator.space_charge` from
     whatever `archive()` was given (`None` for either if it wasn't
@@ -204,8 +270,8 @@ def load_archive(simulator, path):
             f"don't know how to restore a beamline_class={a.beamline_class!r}"
         )
     simulator.beamline = beamline
-    simulator.initial_bunch = _particlegroup_to_bunch(a.particle_group, a.bunch_type)
-    simulator.tracked_bunch = None
+    simulator.initial_bunch = _restored_bunch(a)
+    simulator.tracked_bunch = None if a.output is None else _restored_bunch(a.output)
 
 
 def read_archive(path):
@@ -215,10 +281,13 @@ def read_archive(path):
         PKDict:
             autophase (bool): `None` if not recorded
             beamline_class (str): "Lattice" or "Volume"
+            bunch_t_mm (float): a `Bunch6dT`'s clock [mm/c], else `None`
             bunch_type (str): "Bunch6d" or "Bunch6dT"
-            elements (list): one `PKDict` per element, keyed by RF-Track's
-                class (`class`) and attribute names (see the
-                `_serialize_*` functions), with field maps resolved to arrays
+            elements (list): one `PKDict` per element, keyed by `class`,
+                `name`, the aperture, `t0`, `x`/`y`/`z` (see `archive()`),
+                with RF-Track's own attribute names in `attributes` and,
+                if any, its constructor arguments in `constructor`, field
+                maps resolved to arrays
             elements_offsets (numpy.ndarray): a Lattice's element offsets,
                 as `Lattice.set_elements_offsets()` takes them, else `None`
             integrator (PKDict): a Volume's `dt_mm`, `tt_dt_mm`,
@@ -226,6 +295,9 @@ def read_archive(path):
                 `t_max_mm`, else `None`
             lume_rftrack_version (str): the lume-rftrack that wrote it,
                 `None` if not recorded
+            output (PKDict): the tracked bunch, with `bunch_t_mm`,
+                `bunch_type` and `particle_group` like the initial
+                bunch's, or `None` if the simulator hadn't tracked
             particle_group (beamphysics.ParticleGroup): the initial bunch
             rftrack_version (str): the RF-Track that wrote it, `None` if not
                 recorded
@@ -236,16 +308,25 @@ def read_archive(path):
     with h5py.File(path, "r") as f:
         elements = _read_indexed_group(f, "elements")
         if "field_maps" in f:
-            elements = _resolve_field_map_refs(elements, f["field_maps"])
+            elements = [_resolve_field_map_refs(e, f["field_maps"]) for e in elements]
         space_charge = None
         if "space_charge" in f:
             space_charge = PKDict(f["space_charge"].attrs)
             if "grid" in space_charge:
                 space_charge.grid = tuple(int(n) for n in space_charge.grid)
         volume = str(f.attrs["beamline_class"]) == "Volume"
+        output = None
+        if "output" in f:
+            o = f["output"]
+            output = PKDict(
+                bunch_t_mm=_bunch_time_attr(o),
+                bunch_type=str(o.attrs["bunch_type"]),
+                particle_group=beamphysics.ParticleGroup(h5=o["particles"]),
+            )
         return PKDict(
             autophase=bool(f.attrs["autophase"]) if "autophase" in f.attrs else None,
             beamline_class=str(f.attrs["beamline_class"]),
+            bunch_t_mm=_bunch_time_attr(f),
             bunch_type=str(f.attrs["bunch_type"]),
             elements=elements,
             elements_offsets=None if volume else f["elements_offsets"][()],
@@ -259,6 +340,7 @@ def read_archive(path):
                 if "lume_rftrack_version" in f.attrs
                 else None
             ),
+            output=output,
             particle_group=beamphysics.ParticleGroup(h5=f),
             rftrack_version=(
                 str(f.attrs["rftrack_version"])
@@ -271,26 +353,45 @@ def read_archive(path):
         )
 
 
-def _aperture_is_set(e):
+def _aperture_is_set(rft, e, d):
     """Whether `set_aperture()` was ever called on `e`.
 
-    RF-Track has no getter for that, so this compares with the class's
-    own default: (-0.001, -0.001) for every archivable class except
-    `Pillbox_Cavity`, whose default depends on its geometry, so it is
-    compared with a freshly built cavity of the same geometry.
+    RF-Track has no getter for that, so this compares with the default
+    of the same class, built the same way (a `Pillbox_Cavity`'s default
+    depends on its geometry).
     """
-    import RF_Track as rft
+    r = _construct(rft, d)
+    return (e.get_aperture_x(), e.get_aperture_y()) != (
+        r.get_aperture_x(),
+        r.get_aperture_y(),
+    )
 
-    a = (e.get_aperture_x(), e.get_aperture_y())
-    if isinstance(e, rft.Pillbox_Cavity):
-        r = rft.Pillbox_Cavity(
-            numpy.zeros(1),
-            e.get_frequency(),
-            e.get_cell_length(),
-            round(e.get_length() / e.get_cell_length()),
+
+def _assert_restorable(rft, e, d):
+    """Rebuild `e` from `d` (its `_element_to_attrs()`) and require the
+    same field, on and off axis, from before its entrance to past its
+    exit -- what tracking actually sees, and what catches constructor
+    state no getter exposes (e.g. a solenoid's radius).
+
+    Raises:
+        NotImplementedError: the rebuilt element's field differs, or it
+            can't be rebuilt at all
+    """
+    n = _element_from_attrs(rft, d)
+    z = numpy.linspace(-0.1, 1.1, 25) * max(e.get_length(), 0.01) * 1000.0
+    a, b = [], []
+    for x, y in ((0.0, 0.0), (1.0, 0.0), (-2.0, 1.5)):
+        a.append(numpy.hstack(e.get_field(x, y, z, 0.0)))
+        b.append(numpy.hstack(n.get_field(x, y, z, 0.0)))
+    a = numpy.array(a)
+    if not numpy.allclose(
+        numpy.array(b), a, rtol=1e-9, atol=1e-12 * numpy.max(numpy.abs(a))
+    ):
+        raise NotImplementedError(
+            f"a {d['class']!r} element rebuilt from its attributes has a"
+            + " different field; archiving it needs a"
+            + f" _constructor_args_{_constructor_class(d['class']).lower()}()"
         )
-        return a != (r.get_aperture_x(), r.get_aperture_y())
-    return a != (-0.001, -0.001)
 
 
 def _attr_value(v):
@@ -298,6 +399,22 @@ def _attr_value(v):
     if isinstance(v, bytes):
         return v.decode()
     return v.item() if isinstance(v, numpy.generic) else v
+
+
+def _attributes(e):
+    """Every `get_X()`/`set_X()` pair of `e` whose getter takes no
+    arguments (not, e.g., `Quadrupole.get_K1(P_over_Q)`), except
+    `_NOT_GENERIC`'s, as `{X: get_X()}`."""
+    res = PKDict()
+    for m in sorted(dir(e)):
+        a = m[4:]
+        if not m.startswith("get_") or a in _NOT_GENERIC or not hasattr(e, "set_" + a):
+            continue
+        try:
+            res[a] = getattr(e, m)()
+        except TypeError:
+            continue
+    return res
 
 
 def _bunch_to_particlegroup(bunch):
@@ -315,22 +432,166 @@ def _bunch_to_particlegroup(bunch):
     return bunch6d_to_particlegroup(bunch), "Bunch6d"
 
 
+def _bunch_time_attr(group):
+    """The `bunch_t_mm` attr `_write_bunch_time()` wrote on `group`, or
+    `None`."""
+    return float(group.attrs["bunch_t_mm"]) if "bunch_t_mm" in group.attrs else None
+
+
+def _construct(rft, d):
+    """`d`'s class, built from its `constructor` arguments if it has
+    them, else with none."""
+    try:
+        return getattr(rft, d["class"])(
+            *(d.constructor[k] for k in d.constructor_args)
+            if "constructor" in d
+            else ()
+        )
+    except (AttributeError, TypeError) as e:
+        # TypeError: required arguments; AttributeError: "No constructor
+        # defined" (an abstract class)
+        raise NotImplementedError(
+            f"can't build a {d['class']!r} element; archiving it needs a"
+            + f" _constructor_args_{_constructor_class(d['class']).lower()}()"
+        ) from e
+
+
+def _constructor_args_coil(e):
+    # the constructor gives a coil's field outside its length; built
+    # without arguments and set, it has none there
+    return _getters(e, "length", "B0", "R")
+
+
+def _constructor_args_pillbox_cavity(e):
+    # the number of cells has no getter or setter
+    return PKDict(
+        _getters(e, "coefficients", "frequency", "cell_length"),
+        n_cells=e.get_length() / e.get_cell_length(),
+    )
+
+
+def _constructor_args_rf_fieldmap_1d(e):
+    # get_Ez() is the exact array the field map file was loaded into --
+    # confirmed empirically this round-trips a reconstructed element's
+    # get_field() output exactly (max diff 0.0) against the original.
+    return _getters(e, "Ez", "hz", "length", "frequency", "direction")
+
+
+def _constructor_args_rf_fieldmap_2d(e):
+    # Unlike RF_FieldMap_1d's get_Ez(), there's no direct 2D array getter,
+    # so this samples get_field_complex(x, y, z, t) point by point over
+    # the full (nz, nr) grid -- cylindrical symmetry means Er is just the
+    # Cartesian Ex component at (x=r, y=0) (confirmed empirically: sampling
+    # at (x=0, y=r) instead shows the identical value in Ey, not Ex). The
+    # magnetic field is derived from the electric (Bt and Bz 0); a map
+    # with its own would fail `_assert_restorable()`.
+    hr = e.get_hr()
+    hz = e.get_hz()
+    er = numpy.zeros((int(e.get_nz()), int(e.get_nr())), dtype=complex)
+    ez = numpy.zeros_like(er)
+    with _unscaled(e):
+        for zi, ri in numpy.ndindex(er.shape):
+            f = e.get_field_complex(ri * hr * 1000.0, 0.0, zi * hz * 1000.0, 0.0)[0]
+            er[zi, ri] = f[0]
+            ez[zi, ri] = f[2]
+    return PKDict(
+        Er=er,
+        Ez=ez,
+        Bt=0.0,
+        Bz=0.0,
+        hr=hr,
+        hz=hz,
+        length=-1.0,
+        **_getters(e, "frequency", "direction"),
+    )
+
+
+def _constructor_args_sbend(e):
+    # an SBend built without arguments and set has no field (get_field()
+    # is 0, so it doesn't bend in a Volume), though its getters agree
+    return _getters(e, "length", "angle", "P_over_Q", "E1", "E2", "K1")
+
+
+def _constructor_args_solenoid(e):
+    """A Solenoid built without arguments aborts the process in
+    get_field(), and B0 and the radius have no getter/setter pair. B0 is
+    mu0 times the total current per length, with RF-Track's own mu0 (not
+    exported): the current of a 1 m, 1 T solenoid is 1/mu0. A thick
+    winding's number of current sheets has no getter at all."""
+    if e.get_inner_R() != e.get_outer_R():
+        raise NotImplementedError(
+            "archiving a Solenoid with a thick winding (inner_R != outer_R) isn't"
+            + " supported: its number of current sheets has no getter"
+        )
+    return PKDict(
+        length=e.get_length(),
+        B0=e.get_max_current()
+        / type(e)(1.0, 1.0, e.get_inner_R()).get_max_current()
+        / e.get_length(),
+        R=e.get_inner_R(),
+    )
+
+
+def _constructor_args_static_magnetic_fieldmap_1d(e):
+    # There's no direct Bz-array getter for this class (unlike
+    # RF_FieldMap_1d's get_Ez()), so this samples get_field() along the
+    # element's own z range instead. get_field(x, y, z, t)'s coordinate
+    # arguments are documented (RF-Track reference manual, section 5.1.2)
+    # as millimeters, not meters like get_length()/get_z0()/get_z1() --
+    # confirmed empirically: sampling with z in mm reproduces a real
+    # solenoid field map's documented peak field exactly, matching its
+    # source field-map file; the returned B itself is already in Tesla,
+    # no further scaling needed.
+    z = numpy.linspace(e.get_z0(), e.get_z1(), int(e.get_nz())) * 1000.0
+    with _unscaled(e):
+        _, b = e.get_field(0.0, 0.0, z, 0.0)
+    return PKDict(Bz=numpy.asarray(b)[:, 2], hz=e.get_hz())
+
+
+def _constructor_args_static_magnetic_fieldmap_2d(e):
+    # No array getters either: samples get_field() over the (nz, nr) grid,
+    # Br being Bx at (x=r, y=0), as for RF_FieldMap_2d
+    hr = e.get_hr()
+    z = numpy.arange(int(e.get_nz())) * e.get_hz() * 1000.0
+    br = numpy.zeros((len(z), int(e.get_nr())))
+    bz = numpy.zeros_like(br)
+    with _unscaled(e):
+        for ri in range(br.shape[1]):
+            b = numpy.asarray(e.get_field(ri * hr * 1000.0, 0.0, z, 0.0)[1])
+            br[:, ri] = b[:, 0]
+            bz[:, ri] = b[:, 2]
+    return PKDict(Br=br, Bz=bz, hr=hr, hz=e.get_hz())
+
+
+def _constructor_class(class_name):
+    """The class whose constructor functions `class_name` uses."""
+    return _SAME_CONSTRUCTOR.get(class_name, class_name)
+
+
+def _constructor_function(class_name):
+    """This module's `_constructor_args_<class>` function for
+    `class_name`, or `None`."""
+    return getattr(
+        pykern.pkinspect.this_module(),
+        "_constructor_args_" + _constructor_class(class_name).lower(),
+        None,
+    )
+
+
 def _dedupe_field_maps(elements):
-    """Replace any numpy-array-valued field in `elements` (e.g.
-    RF_FieldMap_1d's "ez", Static_Magnetic_FieldMap_1d's "bz") with a
-    short reference ("@<md5>") to one shared copy, keyed by the array's
-    own content hash -- several elements built from the same uploaded
-    field-map file (e.g. a linac's identical accelerating cavities) are
-    otherwise archived with a byte-for-byte duplicate of the same array
-    once per element.
+    """Replace each array in an element's `constructor` (a field map,
+    e.g. RF_FieldMap_1d's "Ez") with a short reference ("@<md5>") to one
+    shared copy, keyed by the array's own content hash -- several
+    elements built from the same field-map file (e.g. a linac's
+    identical accelerating cavities) are otherwise archived with a
+    byte-for-byte duplicate of the same array once per element.
 
     Returns:
-        (list, dict): the deduped element dicts (shallow copies -- the
-            originals are untouched), and `{md5: array}` for every
-            unique array found, to write once under a shared top-level
-            group (see `archive()`). A reference is plain text (goes in
-            as a normal attr, same as any other string field), so this
-            needs no changes to `_write_attrs_h5`/`_read_attrs_h5`.
+        (list, dict): the deduped element dicts (copies -- the originals
+            are untouched), and `{md5: array}` for every unique array
+            found, to write once under a shared top-level group (see
+            `archive()`). A reference is plain text, written as a normal
+            attr like any other string.
     """
     import hashlib
 
@@ -338,156 +599,82 @@ def _dedupe_field_maps(elements):
     deduped = []
     for e in elements:
         d = PKDict(e)
-        for k, v in e.items():
-            if isinstance(v, numpy.ndarray):
-                h = hashlib.md5(v.tobytes()).hexdigest()
-                field_maps[h] = v
-                d[k] = f"@{h}"
+        if "constructor" in e:
+            d.constructor = PKDict(e.constructor)
+            for k, v in e.constructor.items():
+                if isinstance(v, numpy.ndarray):
+                    h = hashlib.md5(v.tobytes()).hexdigest()
+                    field_maps[h] = v
+                    d.constructor[k] = f"@{h}"
         deduped.append(d)
     return deduped, field_maps
 
 
-def _deserialize_bpm(rft, d):
-    return rft.Bpm(float(d.length), float(d.resolution), float(d.resolution_t))
-
-
-def _deserialize_corrector(rft, d):
-    return rft.Corrector(float(d.length), float(d.kx), float(d.ky))
-
-
-def _deserialize_drift(rft, d):
-    return rft.Drift(float(d.length))
-
-
-def _deserialize_pillbox_cavity(rft, d):
-    e = rft.Pillbox_Cavity(
-        numpy.array(d.coefficients, dtype=float),
-        float(d.frequency),
-        float(d.cell_length),
-        float(d.n_cells),
-    )
-    e.set_phid(float(d.phid))
-    return e
-
-
-def _deserialize_quadrupole(rft, d):
-    e = rft.Quadrupole(float(d.length), math.nan, 0.0)
-    e.set_gradient(float(d.gradient))
-    return e
-
-
-def _deserialize_rf_fieldmap_1d(rft, d):
-    e = rft.RF_FieldMap_1d(
-        numpy.asarray(d.ez),
-        float(d.hz),
-        float(d.length),
-        float(d.frequency),
-        float(d.direction),
-        float(d.p_map),
-        float(d.p_actual),
-    )
-    e.set_phid(float(d.phid))
-    return e
-
-
-def _deserialize_rf_fieldmap_2d(rft, d):
-    e = rft.RF_FieldMap_2d(
-        numpy.asarray(d.er),
-        numpy.asarray(d.ez),
-        0,
-        0,
-        float(d.hr),
-        float(d.hz),
-        -1,
-        float(d.frequency),
-        float(d.direction),
-        float(d.p_map),
-        float(d.p_actual),
-    )
-    e.set_phid(float(d.phid))
-    return e
-
-
-def _deserialize_screen(rft, d):
-    e = rft.Screen()
-    e.set_width(float(d.width))
-    e.set_height(float(d.height))
-    return e
-
-
-def _deserialize_static_magnetic_fieldmap_1d(rft, d):
-    return rft.Static_Magnetic_FieldMap_1d(numpy.asarray(d.bz), float(d.hz))
-
-
 def _element_from_attrs(rft, d):
-    cls = d["class"]
-    f = getattr(pykern.pkinspect.this_module(), f"_deserialize_{cls.lower()}", None)
-    if f is None:
-        raise NotImplementedError(f"don't know how to restore a {cls!r} element yet")
-    e = f(rft, d)
+    """The element `d` (from `_element_to_attrs()` or `read_archive()`)
+    describes, built by `_construct()` and set from its `attributes`."""
+    e = _construct(rft, d)
+    for k in sorted(d.attributes) + list(_SET_LAST.get(d["class"], ())):
+        _set_attribute(e, d["class"], k, d.attributes[k])
     e.set_name(str(d.name))
     if d.aperture_set:
         e.set_aperture(float(d.aperture_x), float(d.aperture_y), str(d.aperture_shape))
-    e.set_nsteps(int(d.nsteps))
-    e.set_sc_nsteps(int(d.sc_nsteps))
-    e.set_tt_nsteps(int(d.tt_nsteps))
     if "t0" in d:
         e.set_t0(float(d.t0))
     return e
 
 
-def _element_to_attrs(e, beamline_class="Lattice"):
+def _element_to_attrs(rft, e, beamline_class="Lattice"):
     cls = type(e).__name__
-    f = getattr(pykern.pkinspect.this_module(), f"_serialize_{cls.lower()}", None)
-    if f is None:
-        raise NotImplementedError(f"don't know how to archive a {cls!r} element yet")
-    d = f(e)
+    d = PKDict(name=e.get_name(), attributes=_attributes(e))
     d["class"] = cls
-    d.name = e.get_name()
+    f = _constructor_function(cls)
+    if f is not None:
+        d.constructor = f(e)
+        # in the constructor's argument order, which HDF5 doesn't keep
+        d.constructor_args = list(d.constructor)
     d.aperture_x = e.get_aperture_x()
     d.aperture_y = e.get_aperture_y()
-    d.aperture_set = _aperture_is_set(e)
     d.aperture_shape = e.get_aperture_shape()
-    d.nsteps = e.get_nsteps()
-    d.sc_nsteps = e.get_sc_nsteps()
-    d.tt_nsteps = e.get_tt_nsteps()
+    d.aperture_set = _aperture_is_set(rft, e, d)
     if beamline_class == "Volume":
         d.update(_position_to_attrs(e))
-    # Only Pillbox_Cavity/RF_FieldMap_1d/RF_FieldMap_2d/Screen have
-    # t0_is_set()/get_t0() at all (confirmed empirically -- Drift,
-    # Quadrupole, Corrector, Solenoid, Static_Magnetic_FieldMap_1d,
-    # Bpm don't). get_phid() alone never reflects autophase(): it
-    # "always reads back the phid the element was constructed with"
-    # (confirmed empirically: get_phid() stays unchanged across
-    # autophase()) -- t0 is the actual correction autophase() applies
-    # and .track() uses as-is. Archiving it directly (confirmed
-    # empirically: a fresh beamline with set_t0() from these captured
-    # values, autophase() never called again, reproduces the
-    # autophased beamline's own tracked mean kinetic energy exactly)
-    # means load_archive() reproduces the real physics regardless of
-    # whether the caller re-runs autophase() or even knows it was ever
-    # used, rather than depending on that recomputation happening to
-    # be reproducible.
+    # Only RF fields and Screen have t0_is_set()/get_t0() at all.
+    # get_phid() alone never reflects autophase(): it always reads back
+    # the phid the element was constructed with (confirmed empirically:
+    # get_phid() stays unchanged across autophase()) -- t0 is the actual
+    # correction autophase() applies and .track() uses as-is. Archiving
+    # it directly (confirmed empirically: a fresh beamline with set_t0()
+    # from these captured values, autophase() never called again,
+    # reproduces the autophased beamline's own tracked mean kinetic
+    # energy exactly) means load_archive() reproduces the real physics
+    # regardless of whether the caller re-runs autophase() or even knows
+    # it was ever used, rather than depending on that recomputation
+    # happening to be reproducible.
     if hasattr(e, "t0_is_set") and e.t0_is_set():
         d.t0 = e.get_t0()
     return d
+
+
+def _getters(e, *names):
+    """`{name: e.get_<name>()}` for `names`, in that order."""
+    return PKDict((n, getattr(e, "get_" + n)()) for n in names)
 
 
 def _infer_autophase(elements):
     """Infer whether `autophase()` was used, from the already-serialized
     `elements` themselves, for `archive()`'s own `autophase=None` case.
 
-    A cavity `autophase()`'d before archiving has a real, nonzero `t0`
-    (see `_element_to_attrs()`'s own comment -- `get_phid()` never
-    reflects it, `t0` does); one that was never autophased either has
-    no `"t0"` key at all (`t0_is_set()` was `False`) or, if the caller
-    deliberately pinned it to suppress a `Bunch6dT` beamline's own
-    unwanted rescue autophase on `.track()`, exactly `0.0`. Either way,
-    "any cavity with a nonzero `t0`" is the signal.
+    An RF element (one with a `phid`) `autophase()`'d before archiving
+    has a real, nonzero `t0` (see `_element_to_attrs()`'s own comment --
+    `get_phid()` never reflects it, `t0` does); one that was never
+    autophased either has no `"t0"` key at all (`t0_is_set()` was
+    `False`) or, if the caller deliberately pinned it to suppress a
+    `Bunch6dT` beamline's own unwanted rescue autophase on `.track()`,
+    exactly `0.0`. Either way, "any RF element with a nonzero `t0`" is
+    the signal.
     """
-    return any(
-        d.get("class") in _CAVITY_CLASSES and d.get("t0", 0.0) != 0.0 for d in elements
-    )
+    return any("phid" in d.attributes and d.get("t0", 0.0) != 0.0 for d in elements)
 
 
 def _particlegroup_to_bunch(particle_group, bunch_type):
@@ -529,9 +716,10 @@ def _position_to_attrs(e):
 
 
 def _read_attrs_h5(group):
-    d = PKDict(group.attrs)
-    for k in group:
-        d[k] = group[k][()]
+    """The inverse of `_write_attrs_h5()`."""
+    d = PKDict({k: _attr_value(v) for k, v in group.attrs.items()})
+    for k, v in group.items():
+        d[k] = _read_attrs_h5(v) if isinstance(v, h5py.Group) else v[()]
     return d
 
 
@@ -540,173 +728,146 @@ def _read_indexed_group(parent, name):
     return [_read_attrs_h5(g[str(i)]) for i in range(len(g))]
 
 
-def _resolve_field_map_refs(elements, field_maps_group):
-    """The exact inverse of `_dedupe_field_maps()`: replace every "@<md5>"
-    reference in `elements` with the real array read from
-    `field_maps_group[md5]`.
+def _resolve_field_map_refs(element, field_maps_group):
+    """The exact inverse of `_dedupe_field_maps()` for one element:
+    replace every "@<md5>" reference in its `constructor` with the real
+    array read from `field_maps_group[md5]`.
     """
-    resolved = []
-    for e in elements:
-        d = PKDict(e)
-        for k, v in e.items():
-            if isinstance(v, str) and v.startswith("@"):
-                d[k] = field_maps_group[v[1:]][()]
-        resolved.append(d)
-    return resolved
-
-
-def _serialize_bpm(e):
-    return PKDict(
-        length=e.get_length(),
-        resolution=e.get_resolution(),
-        resolution_t=e.get_resolution_t(),
+    if "constructor" not in element:
+        return element
+    d = PKDict(element)
+    d.constructor = PKDict(
+        {
+            k: (
+                field_maps_group[v[1:]][()]
+                if isinstance(v, str) and v.startswith("@")
+                else v
+            )
+            for k, v in element.constructor.items()
+        }
     )
+    return d
 
 
-def _serialize_corrector(e):
-    kx, ky = e.get_strength()
-    return PKDict(length=e.get_length(), kx=float(kx), ky=float(ky))
+def _restored_bunch(data):
+    """The bunch `data` (`read_archive()`'s, or its `output`) holds, with a
+    `Bunch6dT`'s clock set back: its particles alone leave it at their
+    creation time."""
+    res = _particlegroup_to_bunch(data.particle_group, data.bunch_type)
+    if data.bunch_t_mm is not None:
+        res.t = data.bunch_t_mm
+    return res
 
 
-def _serialize_drift(e):
-    return PKDict(length=e.get_length())
+def _set_attribute(e, class_name, name, value):
+    """`e.set_<name>(value)`, or with `value`'s elements as the
+    arguments: a vector attribute's setter can take them separately, e.g.
+    `set_static_Bfield(Bx, By, Bz)`, `Corrector.set_strength(Sx, Sy)`.
 
-
-def _serialize_pillbox_cavity(e):
-    return PKDict(
-        frequency=e.get_frequency(),
-        cell_length=e.get_cell_length(),
-        n_cells=round(e.get_length() / e.get_cell_length()),
-        coefficients=e.get_coefficients().tolist(),
-        phid=e.get_phid(),
-    )
-
-
-def _serialize_quadrupole(e):
-    return PKDict(length=e.get_length(), gradient=e.get_gradient())
-
-
-def _serialize_rf_fieldmap_1d(e):
-    # get_Ez() is the exact array the field map file was loaded into --
-    # confirmed empirically this round-trips a reconstructed element's
-    # get_field() output exactly (max diff 0.0) against the original.
-    return PKDict(
-        ez=e.get_Ez(),
-        hz=e.get_hz(),
-        length=e.get_length(),
-        frequency=e.get_frequency(),
-        direction=e.get_direction(),
-        phid=e.get_phid(),
-        p_map=e.get_P_map(),
-        p_actual=e.get_P_actual(),
-    )
-
-
-def _serialize_rf_fieldmap_2d(e):
-    # Unlike RF_FieldMap_1d's get_Ez(), there's no direct 2D array getter,
-    # so this samples get_field_complex(x, y, z, t) point by point over
-    # the full (nz, nr) grid -- cylindrical symmetry means Er is just the
-    # Cartesian Ex component at (x=r, y=0) (confirmed empirically: sampling
-    # at (x=0, y=r) instead shows the identical value in Ey, not Ex).
-    #
-    # Critically, get_field_complex()'s result already has the element's
-    # own phid rotation baked in -- confirmed empirically: a copy built
-    # with phid=0 and never touched matches the original's reading
-    # exactly, while one built from this same grid with phid set AGAIN
-    # double-applies the rotation. So phid is reset to 0 for the
-    # extraction, then restored on the original afterward, and the
-    # genuine phid is carried separately (same split as every other
-    # cavity type here) rather than baked into the grid.
-    hr = e.get_hr()
-    hz = e.get_hz()
-    nr = int(e.get_nr())
-    nz = int(e.get_nz())
-    phid = e.get_phid()
-    e.set_phid(0.0)
+    Raises:
+        NotImplementedError: the setter takes neither
+    """
+    s = getattr(e, "set_" + name)
     try:
-        er = numpy.zeros((nz, nr), dtype=complex)
-        ez = numpy.zeros((nz, nr), dtype=complex)
-        for zi in range(nz):
-            z_mm = zi * hz * 1000.0
-            for ri in range(nr):
-                r_mm = ri * hr * 1000.0
-                field = e.get_field_complex(r_mm, 0.0, z_mm, 0.0)[0]
-                er[zi, ri] = field[0]
-                ez[zi, ri] = field[2]
-    finally:
-        e.set_phid(phid)
-    return PKDict(
-        er=er,
-        ez=ez,
-        hr=hr,
-        hz=hz,
-        frequency=e.get_frequency(),
-        direction=e.get_direction(),
-        phid=phid,
-        p_map=e.get_P_map(),
-        p_actual=e.get_P_actual(),
+        s(value)
+        return
+    except TypeError:
+        pass
+    if isinstance(value, numpy.ndarray):
+        try:
+            s(*value.ravel())
+            return
+        except TypeError:
+            pass
+    raise NotImplementedError(
+        f"can't restore {class_name}.{name}: set_{name}() doesn't take"
+        + f" what get_{name}() returns ({value!r})"
     )
 
 
-def _serialize_screen(e):
-    return PKDict(width=e.get_width(), height=e.get_height())
-
-
-def _serialize_static_magnetic_fieldmap_1d(e):
-    # There's no direct Bz-array getter for this class (unlike
-    # RF_FieldMap_1d's get_Ez()), so this samples get_field() along the
-    # element's own z range instead. get_field(x, y, z, t)'s coordinate
-    # arguments are documented (RF-Track reference manual, section 5.1.2)
-    # as millimeters, not meters like get_length()/get_z0()/get_z1() --
-    # confirmed empirically: sampling with z in mm reproduces a real
-    # solenoid field map's documented peak field exactly, matching its
-    # source field-map file; the returned B itself is already in Tesla,
-    # no further scaling needed.
-    hz = e.get_hz()
-    nz = int(e.get_nz())
-    z_mm = numpy.linspace(e.get_z0(), e.get_z1(), nz) * 1000.0
-    _, b = e.get_field(0.0, 0.0, z_mm, 0.0)
-    return PKDict(bz=numpy.asarray(b)[:, 2], hz=hz)
+@contextlib.contextmanager
+def _unscaled(e):
+    """`e` with no phase offset (`phid`), power scaling (`P_actual`) or
+    `scaling_factor` while sampling its field: those are restored by
+    their setters, so a sampled field map must not include them already
+    (confirmed empirically for phid: sampling with it set, then setting
+    it again, double-applies the rotation).
+    """
+    s = PKDict(
+        {
+            a: getattr(e, "get_" + a)()
+            for a in ("phid", "P_actual", "scaling_factor")
+            if hasattr(e, "get_" + a)
+        }
+    )
+    if "phid" in s:
+        e.set_phid(0.0)
+    if "P_actual" in s:
+        e.set_P_actual(e.get_P_map())
+    if "scaling_factor" in s:
+        e.set_scaling_factor(1.0)
+    try:
+        yield
+    finally:
+        for a, v in s.items():
+            getattr(e, "set_" + a)(v)
 
 
 def _write_attrs_h5(group, data):
     """Write a flat dict of scalars/small arrays as attrs on `group`,
     except a numpy array (e.g. a field map), which goes in as its own
-    dataset instead -- an attr isn't meant to hold something that size.
+    dataset instead -- an attr isn't meant to hold something that size --
+    and a dict, which goes in as a child group, written the same way.
 
     Mirrors lume-impact's `write_attrs_h5()`/`write_fieldmap_h5()`, the
     simplest pattern in the LUME ecosystem for this.
     """
     for k, v in data.items():
-        if isinstance(v, numpy.ndarray):
+        if isinstance(v, dict):
+            _write_attrs_h5(group.create_group(k), v)
+        elif isinstance(v, numpy.ndarray):
             group.create_dataset(k, data=v)
         else:
             group.attrs[k] = v
 
 
-def _write_field_units_h5(group, keys):
-    """Write one child group per key in `keys` that `lume_rftrack.units.UNITS`
-    knows a unit symbol for, each holding openPMD-style `unitSI`/
-    `unitDimension`/`unitSymbol` attrs (`beamphysics.units.write_unit_h5()`,
-    given a `pmd_unit` built from that symbol on the spot -- `UNITS` itself
-    holds plain strings, not `pmd_unit` objects, so it can also be reused
-    directly as `unit=` for a live action variable).
+def _write_bunch_time(group, bunch):
+    """Record a `Bunch6dT`'s clock `t` [mm/c] as `group`'s `bunch_t_mm`
+    attr; a `Bunch6d` has none."""
+    import RF_Track as rft
+
+    if isinstance(bunch, rft.Bunch6dT):
+        group.attrs["bunch_t_mm"] = float(bunch.t)
+
+
+def _write_field_units_h5(group, data, element_class):
+    """Write one child group per key in `data` that has a unit
+    (`lume_rftrack.units.unit()` for `element_class`), each holding
+    openPMD-style `unitSI`/`unitDimension`/`unitSymbol` attrs
+    (`beamphysics.units.write_unit_h5()`, given a `pmd_unit` built from
+    that symbol on the spot), and one child group per dict in `data`,
+    written the same way, so `units` mirrors `elements`.
 
     Lives under a top-level `units` group parallel to `elements`/`bunch`,
-    not nested inside them -- nesting a child group under an
-    elements/bunch item would break `_read_attrs_h5`'s `group[k][()]`,
-    which assumes every child is a dataset. Purely additive documentation;
-    `load_archive()` never reads this back, since the Python code already
-    knows the units by construction.
+    not nested inside them, so `elements` holds only RF-Track's values.
+    Purely additive documentation; `load_archive()` never reads this
+    back. A key with no unit (`None`, or not in the tables, like `name`)
+    is left out.
     """
-    for k in keys:
-        symbol = UNITS.get(k)
-        if symbol is not None:
-            write_unit_h5(group.create_group(k), pmd_unit(symbol))
+    for k, v in data.items():
+        if isinstance(v, dict):
+            _write_field_units_h5(group.create_group(k), v, element_class)
+            continue
+        try:
+            s = lume_rftrack.units.unit(element_class, k)
+        except KeyError:
+            continue
+        if s is not None:
+            write_unit_h5(group.create_group(k), pmd_unit(s))
 
 
 def _write_indexed_group(parent, name, items):
-    """Write `items` (each a flat dict) as `parent/name/0`, `.../1`, ..."""
+    """Write `items` (each a dict) as `parent/name/0`, `.../1`, ..."""
     g = parent.create_group(name)
     for i, item in enumerate(items):
         _write_attrs_h5(g.create_group(str(i)), item)

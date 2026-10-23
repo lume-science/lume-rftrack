@@ -1,17 +1,18 @@
-"""lume_rftrack.rftrack archive()/load_archive() coverage for RF_FieldMap_2d
+"""lume_rftrack.archive archive()/load_archive() coverage for RF_FieldMap_2d
 (a 2D field-map CAVITY, as used by the CERN Linac4 CCDTL section) --
 specifically.
 
 There's no direct 2D array getter for this class (unlike RF_FieldMap_1d's
-get_Ez()), so the serializer samples get_field_complex(x, y, z, t) point
+get_Ez()), so `_constructor_args_rf_fieldmap_2d()` samples get_field_complex(x, y, z, t) point
 by point over the full (nz, nr) grid instead (cylindrical symmetry: Er is
 just the Cartesian Ex component at (x=r, y=0)). Two things make this
 easy to get subtly wrong, caught only by comparing a reconstructed
 element's get_field() against the original's, not just checking shapes:
 
 1. get_field_complex()'s result already has the element's own phid
-   rotation baked in -- extracting with phid left as-is and then also
-   calling set_phid() on the reconstruction double-applies the rotation.
+   rotation and P_actual/P_map power scaling baked in -- extracting with
+   them left as-is and then also setting them on the reconstruction
+   applies them twice.
 2. get_field_complex() only accepts a scalar z (unlike get_field()'s
    vectorized z), so the extraction loop is genuinely point-by-point.
 """
@@ -38,34 +39,22 @@ def _build_cavity(rft, numpy):
     return cav
 
 
-def test_serialize_does_not_double_apply_phid():
+def test_rebuild_does_not_double_apply_phid_or_power():
     import numpy
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _serialize_rf_fieldmap_2d
+    from lume_rftrack.archive import _element_from_attrs, _element_to_attrs
 
     cav = _build_cavity(rft, numpy)
-    orig_phid = cav.get_phid()
-    d = _serialize_rf_fieldmap_2d(cav)
+    cav.set_P_actual(4.0)
+    expect = (cav.get_phid(), cav.get_P_actual())
+    d = _element_to_attrs(rft, cav)
 
-    # extracting must not mutate the element's own phid
-    pkunit.pkeq(orig_phid, cav.get_phid())
+    # extracting must not mutate the element's own phid or power
+    pkunit.pkeq(expect, (cav.get_phid(), cav.get_P_actual()))
 
-    rebuilt = rft.RF_FieldMap_2d(
-        d["er"],
-        d["ez"],
-        0,
-        0,
-        d["hr"],
-        d["hz"],
-        -1,
-        d["frequency"],
-        d["direction"],
-        d["p_map"],
-        d["p_actual"],
-    )
-    rebuilt.set_phid(d["phid"])
+    rebuilt = _element_from_attrs(rft, d)
 
     z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
     for x_mm in (0.0, 1.0, 3.0):
@@ -103,7 +92,8 @@ def test_archive_round_trip():
         pkunit.pkeq("RF_FieldMap_2d", f["elements"]["0"].attrs["class"])
         # a shared "field_maps" dataset, referenced by "@<md5>" --
         # see RFTrackSimulator.archive()'s own docstring
-        pkunit.pkeq((11, 6), f["field_maps"][f["elements"]["0"].attrs["ez"][1:]].shape)
+        c = f["elements"]["0"]["constructor"]
+        pkunit.pkeq((11, 6), f["field_maps"][c.attrs["Ez"][1:]].shape)
 
     reloaded = RFTrackSimulator()
     reloaded.load_archive(path)

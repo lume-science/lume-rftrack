@@ -1,4 +1,4 @@
-"""lume_rftrack.rftrack ParticleGroup <-> Bunch6d conversion
+"""lume_rftrack.utils ParticleGroup <-> Bunch6d conversion
 (`bunch6d_to_particlegroup()`/`particlegroup_to_bunch6d()`).
 
 Both directions treat the bunch as a fixed-z-plane snapshot: Bunch6d's own

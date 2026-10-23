@@ -1,4 +1,4 @@
-"""lume_rftrack.rftrack tests"""
+"""lume_rftrack.model tests"""
 
 
 def _build_model():
@@ -9,7 +9,7 @@ def _build_model():
         RFTrackReadOnlyScalarVariable,
         RFTrackWritableScalarVariable,
     )
-    from lume_rftrack.rftrack import LUMERFTrackModel
+    from lume_rftrack.model import LUMERFTrackModel
     from lume_rftrack.simulator import RFTrackSimulator
 
     q = rft.Quadrupole(0.1, 5.0)
@@ -65,7 +65,7 @@ def _build_corrector_model():
     import rftrack_util
 
     from lume_rftrack.actions import RFTrackWritableVectorComponentVariable
-    from lume_rftrack.rftrack import LUMERFTrackModel
+    from lume_rftrack.model import LUMERFTrackModel
     from lume_rftrack.simulator import RFTrackSimulator
 
     c = rft.Corrector(0.1)

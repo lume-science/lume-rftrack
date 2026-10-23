@@ -37,38 +37,18 @@
     <line_width>1</line_width>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_Gun</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>Gun</value>
-        <description>Gun: POWER=Gun_p_actual, PHASE=Gun_phid</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>20</x><y>125</y><width>20</width><height>70</height>
-    <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>Gun: POWER=Gun_p_actual, PHASE=Gun_phid</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_Gun</name>
-    <text>Gun</text>
-    <x>14</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
     <name>btn_SolBF</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolBF</value>
-        <description>SolBF: SCALE=SolBF_scale_factor</description>
+        <description>SolBF: SCALE=SolBF_scaling_factor</description>
       </action>
     </actions>
     <text></text>
     <x>-8</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolBF: SCALE=SolBF_scale_factor</tooltip>
+    <tooltip>SolBF: SCALE=SolBF_scaling_factor</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolBF</name>
@@ -77,18 +57,38 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
+    <name>btn_Gun</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>Gun</value>
+        <description>Gun: POWER=Gun_P_actual, PHASE=Gun_phid</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>20</x><y>125</y><width>20</width><height>70</height>
+    <background_color><color red="220" green="60" blue="60"/></background_color>
+    <tooltip>Gun: POWER=Gun_P_actual, PHASE=Gun_phid</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_Gun</name>
+    <text>Gun</text>
+    <x>14</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
     <name>btn_SolM</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolM</value>
-        <description>SolM: SCALE=SolM_scale_factor</description>
+        <description>SolM: SCALE=SolM_scaling_factor</description>
       </action>
     </actions>
     <text></text>
     <x>25</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolM: SCALE=SolM_scale_factor</tooltip>
+    <tooltip>SolM: SCALE=SolM_scaling_factor</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolM</name>
@@ -97,38 +97,18 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_DT1</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>DT1</value>
-        <description>DT1: H=DT1_hkick, V=DT1_vkick</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>72</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT1: H=DT1_hkick, V=DT1_vkick</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_DT1</name>
-    <text>DT1</text>
-    <x>66</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
     <name>btn_L1</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L1</value>
-        <description>L1: POWER=L1_p_actual, PHASE=L1_phid</description>
+        <description>L1: POWER=L1_P_actual, PHASE=L1_phid</description>
       </action>
     </actions>
     <text></text>
     <x>58</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L1: POWER=L1_p_actual, PHASE=L1_phid</tooltip>
+    <tooltip>L1: POWER=L1_P_actual, PHASE=L1_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L1</name>
@@ -137,23 +117,23 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_DT2</name>
+    <name>btn_DT1</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
-        <value>DT2</value>
-        <description>DT2: H=DT2_hkick, V=DT2_vkick</description>
+        <value>DT1</value>
+        <description>DT1: H=DT1_strength_x, V=DT1_strength_y</description>
       </action>
     </actions>
     <text></text>
-    <x>135</x><y>125</y><width>10</width><height>70</height>
+    <x>72</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT2: H=DT2_hkick, V=DT2_vkick</tooltip>
+    <tooltip>DT1: H=DT1_strength_x, V=DT1_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
-    <name>lbl_DT2</name>
-    <text>DT2</text>
-    <x>129</x><y>60</y><width>16</width><height>56</height>
+    <name>lbl_DT1</name>
+    <text>DT1</text>
+    <x>66</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -162,18 +142,38 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolL1</value>
-        <description>SolL1: SCALE=SolL1_scale_factor</description>
+        <description>SolL1: SCALE=SolL1_scaling_factor</description>
       </action>
     </actions>
     <text></text>
     <x>129</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL1: SCALE=SolL1_scale_factor</tooltip>
+    <tooltip>SolL1: SCALE=SolL1_scaling_factor</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolL1</name>
     <text>SolL1</text>
     <x>123</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_DT2</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>DT2</value>
+        <description>DT2: H=DT2_strength_x, V=DT2_strength_y</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>135</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="200" green="60" blue="200"/></background_color>
+    <tooltip>DT2: H=DT2_strength_x, V=DT2_strength_y</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_DT2</name>
+    <text>DT2</text>
+    <x>129</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="rectangle" version="2.0.0">
@@ -194,13 +194,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L2</value>
-        <description>L2: POWER=L2_p_actual, PHASE=L2_phid</description>
+        <description>L2: POWER=L2_P_actual, PHASE=L2_phid</description>
       </action>
     </actions>
     <text></text>
     <x>243</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L2: POWER=L2_p_actual, PHASE=L2_phid</tooltip>
+    <tooltip>L2: POWER=L2_P_actual, PHASE=L2_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L2</name>
@@ -209,38 +209,18 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_DT3</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>DT3</value>
-        <description>DT3: H=DT3_hkick, V=DT3_vkick</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>316</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT3: H=DT3_hkick, V=DT3_vkick</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_DT3</name>
-    <text>DT3</text>
-    <x>310</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
     <name>btn_SolL2</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolL2</value>
-        <description>SolL2: SCALE=SolL2_scale_factor</description>
+        <description>SolL2: SCALE=SolL2_scaling_factor</description>
       </action>
     </actions>
     <text></text>
     <x>303</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL2: SCALE=SolL2_scale_factor</tooltip>
+    <tooltip>SolL2: SCALE=SolL2_scaling_factor</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolL2</name>
@@ -249,23 +229,83 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
+    <name>btn_DT3</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>DT3</value>
+        <description>DT3: H=DT3_strength_x, V=DT3_strength_y</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>316</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="200" green="60" blue="200"/></background_color>
+    <tooltip>DT3: H=DT3_strength_x, V=DT3_strength_y</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_DT3</name>
+    <text>DT3</text>
+    <x>310</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
     <name>btn_L3</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L3</value>
-        <description>L3: POWER=L3_p_actual, PHASE=L3_phid</description>
+        <description>L3: POWER=L3_P_actual, PHASE=L3_phid</description>
       </action>
     </actions>
     <text></text>
     <x>348</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L3: POWER=L3_p_actual, PHASE=L3_phid</tooltip>
+    <tooltip>L3: POWER=L3_P_actual, PHASE=L3_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L3</name>
     <text>L3</text>
     <x>342</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_DT4</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>DT4</value>
+        <description>DT4: H=DT4_strength_x, V=DT4_strength_y</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>420</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="200" green="60" blue="200"/></background_color>
+    <tooltip>DT4: H=DT4_strength_x, V=DT4_strength_y</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_DT4</name>
+    <text>DT4</text>
+    <x>414</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_SolL4</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>SolL4</value>
+        <description>SolL4: SCALE=SolL4_scaling_factor</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>422</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="60" green="120" blue="220"/></background_color>
+    <tooltip>SolL4: SCALE=SolL4_scaling_factor</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_SolL4</name>
+    <text>SolL4</text>
+    <x>416</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="rectangle" version="2.0.0">
@@ -281,78 +321,18 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_SolL4</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>SolL4</value>
-        <description>SolL4: SCALE=SolL4_scale_factor</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>422</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL4: SCALE=SolL4_scale_factor</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_SolL4</name>
-    <text>SolL4</text>
-    <x>416</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
-    <name>btn_DT4</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>DT4</value>
-        <description>DT4: H=DT4_hkick, V=DT4_vkick</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>420</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT4: H=DT4_hkick, V=DT4_vkick</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_DT4</name>
-    <text>DT4</text>
-    <x>414</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
-    <name>btn_DT5</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>DT5</value>
-        <description>DT5: H=DT5_hkick, V=DT5_vkick</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>500</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT5: H=DT5_hkick, V=DT5_vkick</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_DT5</name>
-    <text>DT5</text>
-    <x>494</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
     <name>btn_L4</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L4</value>
-        <description>L4: POWER=L4_p_actual, PHASE=L4_phid</description>
+        <description>L4: POWER=L4_P_actual, PHASE=L4_phid</description>
       </action>
     </actions>
     <text></text>
     <x>492</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L4: POWER=L4_p_actual, PHASE=L4_phid</tooltip>
+    <tooltip>L4: POWER=L4_P_actual, PHASE=L4_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L4</name>
@@ -361,18 +341,38 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
+    <name>btn_DT5</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>DT5</value>
+        <description>DT5: H=DT5_strength_x, V=DT5_strength_y</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>500</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="200" green="60" blue="200"/></background_color>
+    <tooltip>DT5: H=DT5_strength_x, V=DT5_strength_y</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_DT5</name>
+    <text>DT5</text>
+    <x>494</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
     <name>btn_L5</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L5</value>
-        <description>L5: POWER=L5_p_actual, PHASE=L5_phid</description>
+        <description>L5: POWER=L5_P_actual, PHASE=L5_phid</description>
       </action>
     </actions>
     <text></text>
     <x>582</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L5: POWER=L5_p_actual, PHASE=L5_phid</tooltip>
+    <tooltip>L5: POWER=L5_P_actual, PHASE=L5_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L5</name>
@@ -393,38 +393,18 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_DT6</name>
-    <actions>
-      <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>DT6</value>
-        <description>DT6: H=DT6_hkick, V=DT6_vkick</description>
-      </action>
-    </actions>
-    <text></text>
-    <x>687</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT6: H=DT6_hkick, V=DT6_vkick</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_DT6</name>
-    <text>DT6</text>
-    <x>681</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="action_button" version="3.0.0">
     <name>btn_L6</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>L6</value>
-        <description>L6: POWER=L6_p_actual, PHASE=L6_phid</description>
+        <description>L6: POWER=L6_P_actual, PHASE=L6_phid</description>
       </action>
     </actions>
     <text></text>
     <x>678</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
-    <tooltip>L6: POWER=L6_p_actual, PHASE=L6_phid</tooltip>
+    <tooltip>L6: POWER=L6_P_actual, PHASE=L6_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L6</name>
@@ -433,18 +413,38 @@
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
+    <name>btn_DT6</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>DT6</value>
+        <description>DT6: H=DT6_strength_x, V=DT6_strength_y</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>687</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="200" green="60" blue="200"/></background_color>
+    <tooltip>DT6: H=DT6_strength_x, V=DT6_strength_y</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_DT6</name>
+    <text>DT6</text>
+    <x>681</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
     <name>btn_DT7</name>
     <actions>
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DT7</value>
-        <description>DT7: H=DT7_hkick, V=DT7_vkick</description>
+        <description>DT7: H=DT7_strength_x, V=DT7_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>776</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT7: H=DT7_hkick, V=DT7_vkick</tooltip>
+    <tooltip>DT7: H=DT7_strength_x, V=DT7_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT7</name>
@@ -470,13 +470,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DT8</value>
-        <description>DT8: H=DT8_hkick, V=DT8_vkick</description>
+        <description>DT8: H=DT8_strength_x, V=DT8_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>834</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT8: H=DT8_hkick, V=DT8_vkick</tooltip>
+    <tooltip>DT8: H=DT8_strength_x, V=DT8_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT8</name>
@@ -490,13 +490,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ1</value>
-        <description>DQ1: K1=DQ1_k1</description>
+        <description>DQ1: K1=DQ1_K1, GRADIENT=DQ1_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>850</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ1: K1=DQ1_k1</tooltip>
+    <tooltip>DQ1: K1=DQ1_K1, GRADIENT=DQ1_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ1</name>
@@ -510,13 +510,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ2</value>
-        <description>DQ2: K1=DQ2_k1</description>
+        <description>DQ2: K1=DQ2_K1, GRADIENT=DQ2_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>867</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ2: K1=DQ2_k1</tooltip>
+    <tooltip>DQ2: K1=DQ2_K1, GRADIENT=DQ2_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ2</name>
@@ -530,13 +530,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ3</value>
-        <description>DQ3: K1=DQ3_k1</description>
+        <description>DQ3: K1=DQ3_K1, GRADIENT=DQ3_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>893</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ3: K1=DQ3_k1</tooltip>
+    <tooltip>DQ3: K1=DQ3_K1, GRADIENT=DQ3_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ3</name>
@@ -550,13 +550,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DT9</value>
-        <description>DT9: H=DT9_hkick, V=DT9_vkick</description>
+        <description>DT9: H=DT9_strength_x, V=DT9_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>908</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT9: H=DT9_hkick, V=DT9_vkick</tooltip>
+    <tooltip>DT9: H=DT9_strength_x, V=DT9_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT9</name>
@@ -570,13 +570,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DT10</value>
-        <description>DT10: H=DT10_hkick, V=DT10_vkick</description>
+        <description>DT10: H=DT10_strength_x, V=DT10_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>924</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT10: H=DT10_hkick, V=DT10_vkick</tooltip>
+    <tooltip>DT10: H=DT10_strength_x, V=DT10_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT10</name>
@@ -590,13 +590,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ4</value>
-        <description>DQ4: K1=DQ4_k1</description>
+        <description>DQ4: K1=DQ4_K1, GRADIENT=DQ4_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>941</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ4: K1=DQ4_k1</tooltip>
+    <tooltip>DQ4: K1=DQ4_K1, GRADIENT=DQ4_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ4</name>
@@ -610,13 +610,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ5</value>
-        <description>DQ5: K1=DQ5_k1</description>
+        <description>DQ5: K1=DQ5_K1, GRADIENT=DQ5_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>958</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ5: K1=DQ5_k1</tooltip>
+    <tooltip>DQ5: K1=DQ5_K1, GRADIENT=DQ5_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ5</name>
@@ -630,13 +630,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ6</value>
-        <description>DQ6: K1=DQ6_k1</description>
+        <description>DQ6: K1=DQ6_K1, GRADIENT=DQ6_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>975</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ6: K1=DQ6_k1</tooltip>
+    <tooltip>DQ6: K1=DQ6_K1, GRADIENT=DQ6_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ6</name>
@@ -650,13 +650,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ7</value>
-        <description>DQ7: K1=DQ7_k1</description>
+        <description>DQ7: K1=DQ7_K1, GRADIENT=DQ7_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>994</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ7: K1=DQ7_k1</tooltip>
+    <tooltip>DQ7: K1=DQ7_K1, GRADIENT=DQ7_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ7</name>
@@ -670,13 +670,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DT12</value>
-        <description>DT12: H=DT12_hkick, V=DT12_vkick</description>
+        <description>DT12: H=DT12_strength_x, V=DT12_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>1113</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>DT12: H=DT12_hkick, V=DT12_vkick</tooltip>
+    <tooltip>DT12: H=DT12_strength_x, V=DT12_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT12</name>
@@ -702,13 +702,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ8</value>
-        <description>DQ8: K1=DQ8_k1</description>
+        <description>DQ8: K1=DQ8_K1, GRADIENT=DQ8_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>1151</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ8: K1=DQ8_k1</tooltip>
+    <tooltip>DQ8: K1=DQ8_K1, GRADIENT=DQ8_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ8</name>
@@ -722,13 +722,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ9</value>
-        <description>DQ9: K1=DQ9_k1</description>
+        <description>DQ9: K1=DQ9_K1, GRADIENT=DQ9_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>1175</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ9: K1=DQ9_k1</tooltip>
+    <tooltip>DQ9: K1=DQ9_K1, GRADIENT=DQ9_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ9</name>
@@ -742,13 +742,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>ET2</value>
-        <description>ET2: H=ET2_hkick, V=ET2_vkick</description>
+        <description>ET2: H=ET2_strength_x, V=ET2_strength_y</description>
       </action>
     </actions>
     <text></text>
     <x>1185</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
-    <tooltip>ET2: H=ET2_hkick, V=ET2_vkick</tooltip>
+    <tooltip>ET2: H=ET2_strength_x, V=ET2_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_ET2</name>
@@ -762,13 +762,13 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>DQ10</value>
-        <description>DQ10: K1=DQ10_k1</description>
+        <description>DQ10: K1=DQ10_K1, GRADIENT=DQ10_gradient</description>
       </action>
     </actions>
     <text></text>
     <x>1196</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
-    <tooltip>DQ10: K1=DQ10_k1</tooltip>
+    <tooltip>DQ10: K1=DQ10_K1, GRADIENT=DQ10_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ10</name>
@@ -1023,27 +1023,9 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_Gun</name>
-    <file>cavity_controls.bob</file>
-    <macros><NAME>Gun</NAME><POWER>Gun_p_actual</POWER><PHASE>Gun_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;Gun&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;Gun&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_SolBF</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolBF</NAME><SCALE>SolBF_scale_factor</SCALE></macros>
+    <macros><NAME>SolBF</NAME><SCALE>SolBF_scaling_factor</SCALE></macros>
     <x>700</x><y>446</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
@@ -1059,9 +1041,27 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_Gun</name>
+    <file>cavity_controls.bob</file>
+    <macros><NAME>Gun</NAME><POWER>Gun_P_actual</POWER><PHASE>Gun_phid</PHASE></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;Gun&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;Gun&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_SolM</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolM</NAME><SCALE>SolM_scale_factor</SCALE></macros>
+    <macros><NAME>SolM</NAME><SCALE>SolM_scaling_factor</SCALE></macros>
     <x>700</x><y>446</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
@@ -1077,27 +1077,9 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT1</name>
-    <file>corrector_controls.bob</file>
-    <macros><NAME>DT1</NAME><H>DT1_hkick</H><V>DT1_vkick</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT1&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;DT1&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_L1</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L1</NAME><POWER>L1_p_actual</POWER><PHASE>L1_phid</PHASE></macros>
+    <macros><NAME>L1</NAME><POWER>L1_P_actual</POWER><PHASE>L1_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1113,17 +1095,17 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT2</name>
+    <name>editor_DT1</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT2</NAME><H>DT2_hkick</H><V>DT2_vkick</V></macros>
+    <macros><NAME>DT1</NAME><H>DT1_strength_x</H><V>DT1_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT2&quot;">
+        <exp bool_exp="pvStr0 == &quot;DT1&quot;">
           <value>true</value>
         </exp>
-        <exp bool_exp="pvStr0 != &quot;DT2&quot;">
+        <exp bool_exp="pvStr0 != &quot;DT1&quot;">
           <value>false</value>
         </exp>
         <pv_name>loc://selected_element("")</pv_name>
@@ -1133,7 +1115,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_SolL1</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL1</NAME><SCALE>SolL1_scale_factor</SCALE></macros>
+    <macros><NAME>SolL1</NAME><SCALE>SolL1_scaling_factor</SCALE></macros>
     <x>700</x><y>446</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
@@ -1149,9 +1131,27 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_DT2</name>
+    <file>corrector_controls.bob</file>
+    <macros><NAME>DT2</NAME><H>DT2_strength_x</H><V>DT2_strength_y</V></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;DT2&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;DT2&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L2</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L2</NAME><POWER>L2_p_actual</POWER><PHASE>L2_phid</PHASE></macros>
+    <macros><NAME>L2</NAME><POWER>L2_P_actual</POWER><PHASE>L2_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1167,27 +1167,9 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT3</name>
-    <file>corrector_controls.bob</file>
-    <macros><NAME>DT3</NAME><H>DT3_hkick</H><V>DT3_vkick</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT3&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;DT3&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_SolL2</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL2</NAME><SCALE>SolL2_scale_factor</SCALE></macros>
+    <macros><NAME>SolL2</NAME><SCALE>SolL2_scaling_factor</SCALE></macros>
     <x>700</x><y>446</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
@@ -1203,9 +1185,27 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_DT3</name>
+    <file>corrector_controls.bob</file>
+    <macros><NAME>DT3</NAME><H>DT3_strength_x</H><V>DT3_strength_y</V></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;DT3&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;DT3&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L3</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L3</NAME><POWER>L3_p_actual</POWER><PHASE>L3_phid</PHASE></macros>
+    <macros><NAME>L3</NAME><POWER>L3_P_actual</POWER><PHASE>L3_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1221,27 +1221,9 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_SolL4</name>
-    <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL4</NAME><SCALE>SolL4_scale_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;SolL4&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;SolL4&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_DT4</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT4</NAME><H>DT4_hkick</H><V>DT4_vkick</V></macros>
+    <macros><NAME>DT4</NAME><H>DT4_strength_x</H><V>DT4_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1257,17 +1239,17 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT5</name>
-    <file>corrector_controls.bob</file>
-    <macros><NAME>DT5</NAME><H>DT5_hkick</H><V>DT5_vkick</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <name>editor_SolL4</name>
+    <file>solenoid_controls.bob</file>
+    <macros><NAME>SolL4</NAME><SCALE>SolL4_scaling_factor</SCALE></macros>
+    <x>700</x><y>446</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT5&quot;">
+        <exp bool_exp="pvStr0 == &quot;SolL4&quot;">
           <value>true</value>
         </exp>
-        <exp bool_exp="pvStr0 != &quot;DT5&quot;">
+        <exp bool_exp="pvStr0 != &quot;SolL4&quot;">
           <value>false</value>
         </exp>
         <pv_name>loc://selected_element("")</pv_name>
@@ -1277,7 +1259,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_L4</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L4</NAME><POWER>L4_p_actual</POWER><PHASE>L4_phid</PHASE></macros>
+    <macros><NAME>L4</NAME><POWER>L4_P_actual</POWER><PHASE>L4_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1293,9 +1275,27 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_DT5</name>
+    <file>corrector_controls.bob</file>
+    <macros><NAME>DT5</NAME><H>DT5_strength_x</H><V>DT5_strength_y</V></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;DT5&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;DT5&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L5</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L5</NAME><POWER>L5_p_actual</POWER><PHASE>L5_phid</PHASE></macros>
+    <macros><NAME>L5</NAME><POWER>L5_P_actual</POWER><PHASE>L5_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1311,27 +1311,9 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT6</name>
-    <file>corrector_controls.bob</file>
-    <macros><NAME>DT6</NAME><H>DT6_hkick</H><V>DT6_vkick</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT6&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;DT6&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_L6</name>
     <file>cavity_controls.bob</file>
-    <macros><NAME>L6</NAME><POWER>L6_p_actual</POWER><PHASE>L6_phid</PHASE></macros>
+    <macros><NAME>L6</NAME><POWER>L6_P_actual</POWER><PHASE>L6_phid</PHASE></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1347,9 +1329,27 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_DT6</name>
+    <file>corrector_controls.bob</file>
+    <macros><NAME>DT6</NAME><H>DT6_strength_x</H><V>DT6_strength_y</V></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;DT6&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;DT6&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_DT7</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT7</NAME><H>DT7_hkick</H><V>DT7_vkick</V></macros>
+    <macros><NAME>DT7</NAME><H>DT7_strength_x</H><V>DT7_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1367,7 +1367,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DT8</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT8</NAME><H>DT8_hkick</H><V>DT8_vkick</V></macros>
+    <macros><NAME>DT8</NAME><H>DT8_strength_x</H><V>DT8_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1385,8 +1385,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ1</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ1</NAME><K1>DQ1_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ1</NAME><K1>DQ1_K1</K1><GRADIENT>DQ1_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1403,8 +1403,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ2</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ2</NAME><K1>DQ2_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ2</NAME><K1>DQ2_K1</K1><GRADIENT>DQ2_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1421,8 +1421,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ3</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ3</NAME><K1>DQ3_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ3</NAME><K1>DQ3_K1</K1><GRADIENT>DQ3_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1439,7 +1439,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DT9</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT9</NAME><H>DT9_hkick</H><V>DT9_vkick</V></macros>
+    <macros><NAME>DT9</NAME><H>DT9_strength_x</H><V>DT9_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1457,7 +1457,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DT10</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT10</NAME><H>DT10_hkick</H><V>DT10_vkick</V></macros>
+    <macros><NAME>DT10</NAME><H>DT10_strength_x</H><V>DT10_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1475,8 +1475,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ4</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ4</NAME><K1>DQ4_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ4</NAME><K1>DQ4_K1</K1><GRADIENT>DQ4_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1493,8 +1493,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ5</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ5</NAME><K1>DQ5_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ5</NAME><K1>DQ5_K1</K1><GRADIENT>DQ5_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1511,8 +1511,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ6</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ6</NAME><K1>DQ6_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ6</NAME><K1>DQ6_K1</K1><GRADIENT>DQ6_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1529,8 +1529,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ7</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ7</NAME><K1>DQ7_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ7</NAME><K1>DQ7_K1</K1><GRADIENT>DQ7_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1547,7 +1547,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DT12</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>DT12</NAME><H>DT12_hkick</H><V>DT12_vkick</V></macros>
+    <macros><NAME>DT12</NAME><H>DT12_strength_x</H><V>DT12_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1565,8 +1565,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ8</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ8</NAME><K1>DQ8_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ8</NAME><K1>DQ8_K1</K1><GRADIENT>DQ8_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1583,8 +1583,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ9</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ9</NAME><K1>DQ9_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ9</NAME><K1>DQ9_K1</K1><GRADIENT>DQ9_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1601,7 +1601,7 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_ET2</name>
     <file>corrector_controls.bob</file>
-    <macros><NAME>ET2</NAME><H>ET2_hkick</H><V>ET2_vkick</V></macros>
+    <macros><NAME>ET2</NAME><H>ET2_strength_x</H><V>ET2_strength_y</V></macros>
     <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
@@ -1619,8 +1619,8 @@
   <widget type="embedded" version="2.0.0">
     <name>editor_DQ10</name>
     <file>quad_controls.bob</file>
-    <macros><NAME>DQ10</NAME><K1>DQ10_k1</K1></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>DQ10</NAME><K1>DQ10_K1</K1><GRADIENT>DQ10_gradient</GRADIENT></macros>
+    <x>700</x><y>446</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
