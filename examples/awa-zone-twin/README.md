@@ -24,8 +24,7 @@ without its last line, the `main()` call. Each defines `build_beamline()`,
 `build_bunch()`, and (zone1) `autophase()`, and gets the rest
 (`apply_space_charge()`, `build_model()`, field-map readers, result
 writers) from `lume_rftrack`; the twin reuses them as they are, so the
-lattice, bunch, autophase and space-charge setup come from them. To update
-the twin, regenerate the sims in Sirepo and replace the two files. The one
+lattice, bunch, autophase and space-charge setup come from them. The one
 thing the twin changes is zone1's field-map solenoids: it sets their scale
 factor live through RF-Track's `scaling_factor`, rather than scaling the
 map as the script does, so `<name>_current` [A] stays settable.

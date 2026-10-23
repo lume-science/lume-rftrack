@@ -315,8 +315,12 @@ def bunch6dt_to_particlegroup(bunch, species=None, snapshot_time=True):
 
 def load_field_map(spec):
     """Read a two-column (s, field) text file into `(field, step, length)`,
-    scaled per `spec` (a `dict` or `PKDict` with `file` and `rescale_mode`,
-    plus `scale_factor` for "factor" or `target_field` otherwise).
+    scaled per `spec` (a `dict` or `PKDict` with `file` and `rescale_mode`):
+    "factor" multiplies the field by `scale_factor`, and "peak" scales it so
+    its largest magnitude is `target_field`.
+
+    Raises:
+        ValueError: unknown `rescale_mode`
     """
     spec = PKDict(spec)
     t = numpy.loadtxt(spec.file)
@@ -324,11 +328,13 @@ def load_field_map(spec):
     step = (s.max() - s.min()) / (len(s) - 1)
     length = s.max() - s.min()
     field = t[:, 1]
-    if spec.rescale_mode == "factor":
-        field = field * spec.scale_factor
-    else:
-        field = field / numpy.max(numpy.abs(field)) * spec.target_field
-    return field, step, length
+    rescale = {
+        "factor": lambda: field * spec.scale_factor,
+        "peak": lambda: field / numpy.max(numpy.abs(field)) * spec.target_field,
+    }.get(spec.rescale_mode)
+    if rescale is None:
+        raise ValueError(f"unknown rescale_mode={spec.rescale_mode!r}")
+    return rescale(), step, length
 
 
 def load_field_map_2d(spec):

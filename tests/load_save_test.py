@@ -15,8 +15,10 @@ def test_load_field_map():
     numpy.testing.assert_allclose(field, [2.0, -8.0, 4.0])
     pkunit.pkeq(0.5, step)
     pkunit.pkeq(1.0, length)
-    field, _, _ = load_field_map(dict(file=f, rescale_mode="target", target_field=1.0))
+    field, _, _ = load_field_map(dict(file=f, rescale_mode="peak", target_field=1.0))
     numpy.testing.assert_allclose(field, [0.25, -1.0, 0.5])
+    with pkunit.pkexcept("unknown rescale_mode"):
+        load_field_map(dict(file=f, rescale_mode="target", target_field=1.0))
 
 
 def test_load_field_map_2d():
