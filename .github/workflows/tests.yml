@@ -1,0 +1,35 @@
+name: Run tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # setuptools_scm builds the version from the tags
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+      - name: List Python package versions
+        run: pip list
+      - name: Run tests
+        run: pykern test tests
+      - name: Run the AWA zone twin tests
+        working-directory: examples/awa-zone-twin
+        run: pykern test tests
+      - name: Run the X-band linac tests
+        working-directory: examples/xband-linac
+        run: pykern test tests

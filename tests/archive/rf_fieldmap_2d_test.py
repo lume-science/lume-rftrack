@@ -1,0 +1,150 @@
+"""lume_rftrack.archive archive()/load_archive() coverage for RF_FieldMap_2d
+(a 2D field-map CAVITY, as used by the CERN Linac4 CCDTL section) --
+specifically.
+
+There's no direct 2D array getter for this class (unlike RF_FieldMap_1d's
+get_Ez()), so `_constructor_args_rf_fieldmap_2d()` samples get_field_complex(x, y, z, t) point
+by point over the full (nz, nr) grid instead (cylindrical symmetry: Er is
+just the Cartesian Ex component at (x=r, y=0)). Two things make this
+easy to get subtly wrong, caught only by comparing a reconstructed
+element's get_field() against the original's, not just checking shapes:
+
+1. get_field_complex()'s result already has the element's own phid
+   rotation and P_actual/P_map power scaling baked in -- extracting with
+   them left as-is and then also setting them on the reconstruction
+   applies them twice.
+2. get_field_complex() only accepts a scalar z (unlike get_field()'s
+   vectorized z), so the extraction loop is genuinely point-by-point.
+"""
+
+
+def _build_cavity(rft, numpy):
+    z = numpy.linspace(0, numpy.pi, 11)
+    r = numpy.linspace(0, 1, 6)
+    cav = rft.RF_FieldMap_2d(
+        (1e5 * numpy.cos(z)[:, None] * r[None, :]).astype(complex),
+        (1e6 * numpy.sin(z)[:, None] * (1 - 0.3 * r[None, :])).astype(complex),
+        0,
+        0,
+        0.005,
+        0.02,
+        -1,
+        3e9,
+        1.0,
+        1.0,
+        1.0,
+    )
+    cav.set_name("C1")
+    cav.set_phid(15.0)
+    return cav
+
+
+def test_rebuild_does_not_double_apply_phid_or_power():
+    import numpy
+    import RF_Track as rft
+    from pykern import pkunit
+
+    from lume_rftrack.archive import _element_from_attrs, _element_to_attrs
+
+    cav = _build_cavity(rft, numpy)
+    cav.set_P_actual(4.0)
+    expect = (cav.get_phid(), cav.get_P_actual())
+    d = _element_to_attrs(rft, cav)
+
+    # extracting must not mutate the element's own phid or power
+    pkunit.pkeq(expect, (cav.get_phid(), cav.get_P_actual()))
+
+    rebuilt = _element_from_attrs(rft, d)
+
+    z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
+    for x_mm in (0.0, 1.0, 3.0):
+        numpy.testing.assert_allclose(
+            rebuilt.get_field(x_mm, 0.0, z_mm, 0.0)[0],
+            cav.get_field(x_mm, 0.0, z_mm, 0.0)[0],
+            rtol=0,
+            atol=1e-6,
+            err_msg=f"x_mm={x_mm}: field differs",
+        )
+
+
+def test_archive_round_trip():
+    import h5py
+    import numpy
+    import RF_Track as rft
+    import rftrack_util
+    from pykern import pkunit
+
+    from lume_rftrack.simulator import RFTrackSimulator
+
+    path = str(pkunit.empty_work_dir().join("cavity2d.h5"))
+
+    cav = _build_cavity(rft, numpy)
+    beamline = rft.Lattice()
+    beamline.append(cav)
+    beamline.append(rft.Drift(0.1))
+
+    RFTrackSimulator(
+        beamline,
+        rftrack_util.twiss_bunch(rft, 100.0, 30),
+    ).archive(path)
+
+    with h5py.File(path, "r") as f:
+        pkunit.pkeq("RF_FieldMap_2d", f["elements"]["0"].attrs["class"])
+        # a shared "field_maps" dataset, referenced by "@<md5>" --
+        # see RFTrackSimulator.archive()'s own docstring
+        c = f["elements"]["0"]["constructor"]
+        pkunit.pkeq((11, 6), f["field_maps"][c.attrs["Ez"][1:]].shape)
+
+    reloaded = RFTrackSimulator()
+    reloaded.load_archive(path)
+
+    z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
+    numpy.testing.assert_allclose(
+        reloaded.beamline[0].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        beamline[0].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        rtol=0,
+        atol=1e-6,
+        err_msg="reloaded cavity field differs",
+    )
+
+
+def test_autophased_round_trip():
+    """An autophased cavity's t0 isn't sampled into its map, which would
+    apply it twice"""
+    import numpy
+    import RF_Track as rft
+    import rftrack_util
+    from pykern import pkunit
+
+    from lume_rftrack.simulator import RFTrackSimulator
+
+    path = str(pkunit.empty_work_dir().join("cavity2d.h5"))
+    cav = _build_cavity(rft, numpy)
+    cav.set_P_actual(4.0)
+    beamline = rft.Lattice()
+    beamline.append(rft.Drift(0.1))
+    beamline.append(cav)
+    beamline.autophase(
+        rft.Bunch6d(rft.electronmass, 0.0, -1.0, numpy.array([0, 0, 0, 0, 0, 100.0]))
+    )
+    # append() copies cav
+    pkunit.pkok(beamline[1].t0_is_set(), "autophase() didn't set t0")
+    original = RFTrackSimulator(beamline, rftrack_util.twiss_bunch(rft, 100.0, 30))
+    original.archive(path)
+    reloaded = RFTrackSimulator()
+    reloaded.load_archive(path)
+    z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
+    numpy.testing.assert_allclose(
+        reloaded.beamline[1].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        beamline[1].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        rtol=0,
+        atol=1e-6,
+    )
+    original.track()
+    reloaded.track()
+    numpy.testing.assert_allclose(
+        reloaded.tracked_bunch.get_phase_space("%x %xp %y %yp %t %P"),
+        original.tracked_bunch.get_phase_space("%x %xp %y %yp %t %P"),
+        rtol=1e-8,
+        atol=1e-8,
+    )
