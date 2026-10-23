@@ -1,8 +1,8 @@
 """archive()/load_archive() of RF-Track element classes with no
 lume_rftrack-specific code (Sextupole, Multipole, the _CINT field maps) or
 only their constructor arguments (SBend, Solenoid, Coil,
-Static_Magnetic_FieldMap_2d), and refusal of one that wouldn't come back
-the same.
+Static_Magnetic_FieldMap_2d), an SBend's measured fint, and refusal of one
+that wouldn't come back the same.
 """
 
 
@@ -26,13 +26,17 @@ def test_lattice_round_trip():
         1,
     )
     c.set_phid(-5.0)
+    # its fringe field integral has no getter
+    b = rft.SBend(0.3, 0.05, -100.0, 0.01, 0.02)
+    b.set_hgap(0.02)
+    b.set_fint(0.5)
     _round_trip(
         _lattice(
             rft,
             [
                 s,
                 m,
-                rft.SBend(0.3, 0.05, -100.0, 0.01, 0.02),
+                b,
                 rft.Solenoid(0.2, 0.3, 0.05),
                 c,
             ],
@@ -60,6 +64,26 @@ def test_refuses_what_it_cannot_rebuild():
             RFTrackSimulator(
                 _lattice(rft, [e]), rftrack_util.twiss_bunch(rft, 100.0, 10)
             ).archive(str(pkunit.empty_work_dir().join("a.h5")))
+
+
+def test_sbend_fint():
+    """An SBend's fint, which has no getter, is measured exactly"""
+    import RF_Track as rft
+    from pykern import pkunit
+
+    from lume_rftrack import archive
+
+    for args, hgap, fint in (
+        ((0.3, 0.05, -100.0, 0.01, 0.02), 0.02, 0.5),
+        ((0.5, -0.2, 300.0, 0.0, 0.1, 0.4), 0.05, 0.37),
+        ((0.5, 0.1, -100.0), 0.01, 0.0),
+    ):
+        b = rft.SBend(*args)
+        b.set_hgap(hgap)
+        b.set_fint(fint)
+        b.set_aperture(1e-3, 1e-3, "circular")
+        m = archive._fint(rft, b)
+        pkunit.pkok(abs(m - fint) < 1e-9, "args={} fint={} measured={}", args, fint, m)
 
 
 def test_volume_round_trip():

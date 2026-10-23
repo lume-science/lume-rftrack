@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <display version="2.0.0">
   <name>AWA zone1-&gt;zone2 twin</name>
-  <width>1270</width>
-  <height>1006</height>
+  <width>1306</width>
+  <height>1048</height>
   <widget type="label" version="2.0.0">
     <name>Title</name>
     <text>AWA zone1 -&gt; zone2 twin (click an element to edit it)</text>
@@ -12,27 +12,27 @@
   <widget type="label" version="2.0.0">
     <name>StatusLabel</name>
     <text>Twin:</text>
-    <x>1010</x><y>12</y><width>50</width><height>22</height>
+    <x>1046</x><y>12</y><width>50</width><height>22</height>
     <font><font family="Liberation Sans" style="BOLD" size="12.0"/></font>
   </widget>
   <widget type="led" version="2.0.0">
     <name>StatusLed</name>
     <pv_name>pva://$(P=AWA:SIM:)STATUS</pv_name>
-    <x>1060</x><y>12</y><width>20</width><height>20</height>
+    <x>1096</x><y>12</y><width>20</width><height>20</height>
     <off_color><color red="0" green="170" blue="0"/></off_color>
     <on_color><color red="255" green="150" blue="0"/></on_color>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>StatusText</name>
     <pv_name>pva://$(P=AWA:SIM:)STATUS</pv_name>
-    <x>1090</x><y>10</y><width>130</width><height>22</height>
+    <x>1126</x><y>10</y><width>130</width><height>22</height>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>axis</name>
-    <x>30</x><y>159</y><width>1200</width><height>2</height>
+    <x>28</x><y>159</y><width>1244</width><height>2</height>
     <background_color><color red="0" green="0" blue="0"/></background_color>
     <line_width>1</line_width>
   </widget>
@@ -42,18 +42,18 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolBF</value>
-        <description>SolBF: SCALE=SolBF_scaling_factor</description>
+        <description>SolBF: CURRENT=SolBF_current</description>
       </action>
     </actions>
     <text></text>
-    <x>-8</x><y>125</y><width>10</width><height>70</height>
+    <x>28</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolBF: SCALE=SolBF_scaling_factor</tooltip>
+    <tooltip>SolBF: CURRENT=SolBF_current</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolBF</name>
     <text>SolBF</text>
-    <x>-14</x><y>60</y><width>16</width><height>56</height>
+    <x>22</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -66,14 +66,14 @@
       </action>
     </actions>
     <text></text>
-    <x>20</x><y>125</y><width>20</width><height>70</height>
+    <x>56</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>Gun: POWER=Gun_P_actual, PHASE=Gun_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_Gun</name>
     <text>Gun</text>
-    <x>14</x><y>60</y><width>16</width><height>56</height>
+    <x>50</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -82,18 +82,18 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolM</value>
-        <description>SolM: SCALE=SolM_scaling_factor</description>
+        <description>SolM: CURRENT=SolM_current</description>
       </action>
     </actions>
     <text></text>
-    <x>25</x><y>125</y><width>10</width><height>70</height>
+    <x>78</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolM: SCALE=SolM_scaling_factor</tooltip>
+    <tooltip>SolM: CURRENT=SolM_current</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolM</name>
     <text>SolM</text>
-    <x>19</x><y>60</y><width>16</width><height>56</height>
+    <x>72</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -106,14 +106,14 @@
       </action>
     </actions>
     <text></text>
-    <x>58</x><y>125</y><width>20</width><height>70</height>
+    <x>94</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L1: POWER=L1_P_actual, PHASE=L1_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L1</name>
     <text>L1</text>
-    <x>52</x><y>60</y><width>16</width><height>56</height>
+    <x>88</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -126,14 +126,14 @@
       </action>
     </actions>
     <text></text>
-    <x>72</x><y>125</y><width>10</width><height>70</height>
+    <x>116</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT1: H=DT1_strength_x, V=DT1_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT1</name>
     <text>DT1</text>
-    <x>66</x><y>60</y><width>16</width><height>56</height>
+    <x>110</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -142,18 +142,18 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolL1</value>
-        <description>SolL1: SCALE=SolL1_scaling_factor</description>
+        <description>SolL1: CURRENT=SolL1_current</description>
       </action>
     </actions>
     <text></text>
-    <x>129</x><y>125</y><width>10</width><height>70</height>
+    <x>165</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL1: SCALE=SolL1_scaling_factor</tooltip>
+    <tooltip>SolL1: CURRENT=SolL1_current</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolL1</name>
     <text>SolL1</text>
-    <x>123</x><y>60</y><width>16</width><height>56</height>
+    <x>159</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -166,26 +166,34 @@
       </action>
     </actions>
     <text></text>
-    <x>135</x><y>125</y><width>10</width><height>70</height>
+    <x>181</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT2: H=DT2_strength_x, V=DT2_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT2</name>
     <text>DT2</text>
-    <x>129</x><y>60</y><width>16</width><height>56</height>
+    <x>175</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG1</name>
-    <x>221</x><y>130</y><width>4</width><height>60</height>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_YAG1</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG1</value>
+        <description>YAG1: show its image below</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>257</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG1: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG1</name>
     <text>YAG1</text>
-    <x>215</x><y>65</y><width>16</width><height>56</height>
+    <x>251</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -198,14 +206,14 @@
       </action>
     </actions>
     <text></text>
-    <x>243</x><y>125</y><width>20</width><height>70</height>
+    <x>279</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L2: POWER=L2_P_actual, PHASE=L2_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L2</name>
     <text>L2</text>
-    <x>237</x><y>60</y><width>16</width><height>56</height>
+    <x>273</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -214,18 +222,18 @@
       <action type="write_pv">
         <pv_name>loc://selected_element("")</pv_name>
         <value>SolL2</value>
-        <description>SolL2: SCALE=SolL2_scaling_factor</description>
+        <description>SolL2: CURRENT=SolL2_current</description>
       </action>
     </actions>
     <text></text>
-    <x>303</x><y>125</y><width>10</width><height>70</height>
+    <x>339</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL2: SCALE=SolL2_scaling_factor</tooltip>
+    <tooltip>SolL2: CURRENT=SolL2_current</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_SolL2</name>
     <text>SolL2</text>
-    <x>297</x><y>60</y><width>16</width><height>56</height>
+    <x>333</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -238,14 +246,14 @@
       </action>
     </actions>
     <text></text>
-    <x>316</x><y>125</y><width>10</width><height>70</height>
+    <x>355</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT3: H=DT3_strength_x, V=DT3_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT3</name>
     <text>DT3</text>
-    <x>310</x><y>60</y><width>16</width><height>56</height>
+    <x>349</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -258,14 +266,34 @@
       </action>
     </actions>
     <text></text>
-    <x>348</x><y>125</y><width>20</width><height>70</height>
+    <x>384</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L3: POWER=L3_P_actual, PHASE=L3_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L3</name>
     <text>L3</text>
-    <x>342</x><y>60</y><width>16</width><height>56</height>
+    <x>378</x><y>60</y><width>16</width><height>56</height>
+    <rotation_step>1</rotation_step>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_SolL4</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_element("")</pv_name>
+        <value>SolL4</value>
+        <description>SolL4: CURRENT=SolL4_current</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>458</x><y>125</y><width>10</width><height>70</height>
+    <background_color><color red="60" green="120" blue="220"/></background_color>
+    <tooltip>SolL4: CURRENT=SolL4_current</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>lbl_SolL4</name>
+    <text>SolL4</text>
+    <x>452</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -278,46 +306,34 @@
       </action>
     </actions>
     <text></text>
-    <x>420</x><y>125</y><width>10</width><height>70</height>
+    <x>474</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT4: H=DT4_strength_x, V=DT4_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT4</name>
     <text>DT4</text>
-    <x>414</x><y>60</y><width>16</width><height>56</height>
+    <x>468</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
-    <name>btn_SolL4</name>
+    <name>btn_YAG2</name>
     <actions>
       <action type="write_pv">
-        <pv_name>loc://selected_element("")</pv_name>
-        <value>SolL4</value>
-        <description>SolL4: SCALE=SolL4_scaling_factor</description>
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG2</value>
+        <description>YAG2: show its image below</description>
       </action>
     </actions>
     <text></text>
-    <x>422</x><y>125</y><width>10</width><height>70</height>
-    <background_color><color red="60" green="120" blue="220"/></background_color>
-    <tooltip>SolL4: SCALE=SolL4_scaling_factor</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>lbl_SolL4</name>
-    <text>SolL4</text>
-    <x>416</x><y>60</y><width>16</width><height>56</height>
-    <rotation_step>1</rotation_step>
-  </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG2</name>
-    <x>450</x><y>130</y><width>4</width><height>60</height>
+    <x>490</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG2: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG2</name>
     <text>YAG2</text>
-    <x>444</x><y>65</y><width>16</width><height>56</height>
+    <x>484</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -330,14 +346,14 @@
       </action>
     </actions>
     <text></text>
-    <x>492</x><y>125</y><width>20</width><height>70</height>
+    <x>528</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L4: POWER=L4_P_actual, PHASE=L4_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L4</name>
     <text>L4</text>
-    <x>486</x><y>60</y><width>16</width><height>56</height>
+    <x>522</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -350,14 +366,14 @@
       </action>
     </actions>
     <text></text>
-    <x>500</x><y>125</y><width>10</width><height>70</height>
+    <x>550</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT5: H=DT5_strength_x, V=DT5_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT5</name>
     <text>DT5</text>
-    <x>494</x><y>60</y><width>16</width><height>56</height>
+    <x>544</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -370,26 +386,34 @@
       </action>
     </actions>
     <text></text>
-    <x>582</x><y>125</y><width>20</width><height>70</height>
+    <x>618</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L5: POWER=L5_P_actual, PHASE=L5_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L5</name>
     <text>L5</text>
-    <x>576</x><y>60</y><width>16</width><height>56</height>
+    <x>612</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG3</name>
-    <x>668</x><y>130</y><width>4</width><height>60</height>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_YAG3</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG3</value>
+        <description>YAG3: show its image below</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>704</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG3: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG3</name>
     <text>YAG3</text>
-    <x>662</x><y>65</y><width>16</width><height>56</height>
+    <x>698</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -402,14 +426,14 @@
       </action>
     </actions>
     <text></text>
-    <x>678</x><y>125</y><width>20</width><height>70</height>
+    <x>720</x><y>125</y><width>20</width><height>70</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <tooltip>L6: POWER=L6_P_actual, PHASE=L6_phid</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_L6</name>
     <text>L6</text>
-    <x>672</x><y>60</y><width>16</width><height>56</height>
+    <x>714</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -422,14 +446,14 @@
       </action>
     </actions>
     <text></text>
-    <x>687</x><y>125</y><width>10</width><height>70</height>
+    <x>742</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT6: H=DT6_strength_x, V=DT6_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT6</name>
     <text>DT6</text>
-    <x>681</x><y>60</y><width>16</width><height>56</height>
+    <x>736</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -442,26 +466,34 @@
       </action>
     </actions>
     <text></text>
-    <x>776</x><y>125</y><width>10</width><height>70</height>
+    <x>812</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT7: H=DT7_strength_x, V=DT7_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT7</name>
     <text>DT7</text>
-    <x>770</x><y>60</y><width>16</width><height>56</height>
+    <x>806</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG4</name>
-    <x>793</x><y>130</y><width>4</width><height>60</height>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_YAG4</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG4</value>
+        <description>YAG4: show its image below</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>829</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG4: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG4</name>
     <text>YAG4</text>
-    <x>787</x><y>65</y><width>16</width><height>56</height>
+    <x>823</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -474,14 +506,14 @@
       </action>
     </actions>
     <text></text>
-    <x>834</x><y>125</y><width>10</width><height>70</height>
+    <x>870</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT8: H=DT8_strength_x, V=DT8_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT8</name>
     <text>DT8</text>
-    <x>828</x><y>60</y><width>16</width><height>56</height>
+    <x>864</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -494,14 +526,14 @@
       </action>
     </actions>
     <text></text>
-    <x>850</x><y>125</y><width>10</width><height>70</height>
+    <x>886</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ1: K1=DQ1_K1, GRADIENT=DQ1_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ1</name>
     <text>DQ1</text>
-    <x>844</x><y>60</y><width>16</width><height>56</height>
+    <x>880</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -514,14 +546,14 @@
       </action>
     </actions>
     <text></text>
-    <x>867</x><y>125</y><width>10</width><height>70</height>
+    <x>903</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ2: K1=DQ2_K1, GRADIENT=DQ2_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ2</name>
     <text>DQ2</text>
-    <x>861</x><y>60</y><width>16</width><height>56</height>
+    <x>897</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -534,14 +566,14 @@
       </action>
     </actions>
     <text></text>
-    <x>893</x><y>125</y><width>10</width><height>70</height>
+    <x>929</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ3: K1=DQ3_K1, GRADIENT=DQ3_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ3</name>
     <text>DQ3</text>
-    <x>887</x><y>60</y><width>16</width><height>56</height>
+    <x>923</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -554,14 +586,14 @@
       </action>
     </actions>
     <text></text>
-    <x>908</x><y>125</y><width>10</width><height>70</height>
+    <x>945</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT9: H=DT9_strength_x, V=DT9_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT9</name>
     <text>DT9</text>
-    <x>902</x><y>60</y><width>16</width><height>56</height>
+    <x>939</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -574,14 +606,14 @@
       </action>
     </actions>
     <text></text>
-    <x>924</x><y>125</y><width>10</width><height>70</height>
+    <x>961</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT10: H=DT10_strength_x, V=DT10_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT10</name>
     <text>DT10</text>
-    <x>918</x><y>60</y><width>16</width><height>56</height>
+    <x>955</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -594,14 +626,14 @@
       </action>
     </actions>
     <text></text>
-    <x>941</x><y>125</y><width>11</width><height>70</height>
+    <x>977</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ4: K1=DQ4_K1, GRADIENT=DQ4_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ4</name>
     <text>DQ4</text>
-    <x>935</x><y>60</y><width>16</width><height>56</height>
+    <x>971</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -614,14 +646,14 @@
       </action>
     </actions>
     <text></text>
-    <x>958</x><y>125</y><width>11</width><height>70</height>
+    <x>994</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ5: K1=DQ5_K1, GRADIENT=DQ5_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ5</name>
     <text>DQ5</text>
-    <x>952</x><y>60</y><width>16</width><height>56</height>
+    <x>988</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -634,14 +666,14 @@
       </action>
     </actions>
     <text></text>
-    <x>975</x><y>125</y><width>11</width><height>70</height>
+    <x>1011</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ6: K1=DQ6_K1, GRADIENT=DQ6_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ6</name>
     <text>DQ6</text>
-    <x>969</x><y>60</y><width>16</width><height>56</height>
+    <x>1005</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -654,14 +686,14 @@
       </action>
     </actions>
     <text></text>
-    <x>994</x><y>125</y><width>11</width><height>70</height>
+    <x>1030</x><y>125</y><width>11</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ7: K1=DQ7_K1, GRADIENT=DQ7_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ7</name>
     <text>DQ7</text>
-    <x>988</x><y>60</y><width>16</width><height>56</height>
+    <x>1024</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -674,26 +706,34 @@
       </action>
     </actions>
     <text></text>
-    <x>1113</x><y>125</y><width>10</width><height>70</height>
+    <x>1149</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>DT12: H=DT12_strength_x, V=DT12_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DT12</name>
     <text>DT12</text>
-    <x>1107</x><y>60</y><width>16</width><height>56</height>
+    <x>1143</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG5</name>
-    <x>1138</x><y>130</y><width>4</width><height>60</height>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_YAG5</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG5</value>
+        <description>YAG5: show its image below</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>1174</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG5: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG5</name>
     <text>YAG5</text>
-    <x>1132</x><y>65</y><width>16</width><height>56</height>
+    <x>1168</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -706,14 +746,14 @@
       </action>
     </actions>
     <text></text>
-    <x>1151</x><y>125</y><width>10</width><height>70</height>
+    <x>1190</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ8: K1=DQ8_K1, GRADIENT=DQ8_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ8</name>
     <text>DQ8</text>
-    <x>1145</x><y>60</y><width>16</width><height>56</height>
+    <x>1184</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -726,14 +766,14 @@
       </action>
     </actions>
     <text></text>
-    <x>1175</x><y>125</y><width>10</width><height>70</height>
+    <x>1211</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ9: K1=DQ9_K1, GRADIENT=DQ9_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ9</name>
     <text>DQ9</text>
-    <x>1169</x><y>60</y><width>16</width><height>56</height>
+    <x>1205</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -746,14 +786,14 @@
       </action>
     </actions>
     <text></text>
-    <x>1185</x><y>125</y><width>10</width><height>70</height>
+    <x>1227</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <tooltip>ET2: H=ET2_strength_x, V=ET2_strength_y</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_ET2</name>
     <text>ET2</text>
-    <x>1179</x><y>60</y><width>16</width><height>56</height>
+    <x>1221</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="action_button" version="3.0.0">
@@ -766,115 +806,126 @@
       </action>
     </actions>
     <text></text>
-    <x>1196</x><y>125</y><width>10</width><height>70</height>
+    <x>1243</x><y>125</y><width>10</width><height>70</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <tooltip>DQ10: K1=DQ10_K1, GRADIENT=DQ10_gradient</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_DQ10</name>
     <text>DQ10</text>
-    <x>1190</x><y>60</y><width>16</width><height>56</height>
+    <x>1237</x><y>60</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
-  <widget type="rectangle" version="2.0.0">
-    <name>rect_YAG7</name>
-    <x>1226</x><y>130</y><width>4</width><height>60</height>
+  <widget type="action_button" version="3.0.0">
+    <name>btn_YAG7</name>
+    <actions>
+      <action type="write_pv">
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+        <value>YAG7</value>
+        <description>YAG7: show its image below</description>
+      </action>
+    </actions>
+    <text></text>
+    <x>1262</x><y>130</y><width>10</width><height>60</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
-    <line_width>1</line_width>
+    <tooltip>YAG7: show its image below</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>lbl_YAG7</name>
     <text>YAG7</text>
-    <x>1220</x><y>65</y><width>16</width><height>56</height>
+    <x>1256</x><y>65</y><width>16</width><height>56</height>
     <rotation_step>1</rotation_step>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>boundary</name>
-    <x>798</x><y>100</y><width>1</width><height>120</height>
+    <x>834</x><y>58</y><width>1</width><height>162</height>
     <background_color><color red="120" green="120" blue="120"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>BoundaryLabel</name>
     <text>zone1 | zone2</text>
-    <x>748</x><y>225</y><width>100</width><height>18</height>
-    <font><font family="Liberation Sans" style="REGULAR" size="9"/></font>
+    <x>754</x><y>30</y><width>160</width><height>26</height>
+    <font><font family="Liberation Sans" style="BOLD" size="16.0"/></font>
+    <horizontal_alignment>1</horizontal_alignment>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>legend_cavity</name>
-    <x>30</x><y>270</y><width>20</width><height>20</height>
+    <x>30</x><y>240</y><width>20</width><height>20</height>
     <background_color><color red="220" green="60" blue="60"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>legend_text_cavity</name>
-    <text>RF cavity (click)</text>
-    <x>58</x><y>268</y><width>195</width><height>24</height>
+    <text>RF cavity</text>
+    <x>58</x><y>238</y><width>195</width><height>24</height>
     <font><font family="Liberation Sans" style="REGULAR" size="14"/></font>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>legend_solenoid</name>
-    <x>260</x><y>270</y><width>20</width><height>20</height>
+    <x>260</x><y>240</y><width>20</width><height>20</height>
     <background_color><color red="60" green="120" blue="220"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>legend_text_solenoid</name>
-    <text>solenoid (click)</text>
-    <x>288</x><y>268</y><width>195</width><height>24</height>
+    <text>solenoid</text>
+    <x>288</x><y>238</y><width>195</width><height>24</height>
     <font><font family="Liberation Sans" style="REGULAR" size="14"/></font>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>legend_corrector</name>
-    <x>490</x><y>270</y><width>20</width><height>20</height>
+    <x>490</x><y>240</y><width>20</width><height>20</height>
     <background_color><color red="200" green="60" blue="200"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>legend_text_corrector</name>
-    <text>corrector (click)</text>
-    <x>518</x><y>268</y><width>195</width><height>24</height>
+    <text>corrector</text>
+    <x>518</x><y>238</y><width>195</width><height>24</height>
     <font><font family="Liberation Sans" style="REGULAR" size="14"/></font>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>legend_quadrupole</name>
-    <x>720</x><y>270</y><width>20</width><height>20</height>
+    <x>720</x><y>240</y><width>20</width><height>20</height>
     <background_color><color red="255" green="140" blue="0"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>legend_text_quadrupole</name>
-    <text>quadrupole (click)</text>
-    <x>748</x><y>268</y><width>195</width><height>24</height>
+    <text>quadrupole</text>
+    <x>748</x><y>238</y><width>195</width><height>24</height>
     <font><font family="Liberation Sans" style="REGULAR" size="14"/></font>
   </widget>
   <widget type="rectangle" version="2.0.0">
     <name>legend_screen</name>
-    <x>950</x><y>270</y><width>20</width><height>20</height>
+    <x>950</x><y>240</y><width>20</width><height>20</height>
     <background_color><color red="0" green="190" blue="120"/></background_color>
     <line_width>1</line_width>
   </widget>
   <widget type="label" version="2.0.0">
     <name>legend_text_screen</name>
-    <text>screen (see tabs below)</text>
-    <x>978</x><y>268</y><width>195</width><height>24</height>
+    <text>screen</text>
+    <x>978</x><y>238</y><width>195</width><height>24</height>
     <font><font family="Liberation Sans" style="REGULAR" size="14"/></font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>zone1_DiagHeader</name>
     <text>Zone 1 exit</text>
-    <x>30</x><y>306</y><width>300</width><height>20</height>
-    <font><font family="Liberation Sans" style="BOLD" size="12.0"/></font>
+    <x>30</x><y>276</y><width>300</width><height>28</height>
+    <font><font family="Liberation Sans" style="BOLD" size="18.0"/></font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>zone1_DiagL0</name>
     <text>Charge [pC]</text>
-    <x>30</x><y>332</y><width>150</width><height>22</height>
+    <x>30</x><y>310</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone1_DiagV0</name>
     <pv_name>pva://$(P=AWA:SIM:)zone1_charge_pC</pv_name>
-    <x>185</x><y>332</y><width>110</width><height>22</height>
+    <x>235</x><y>310</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
@@ -882,12 +933,14 @@
   <widget type="label" version="2.0.0">
     <name>zone1_DiagL1</name>
     <text>Energy [MeV]</text>
-    <x>30</x><y>356</y><width>150</width><height>22</height>
+    <x>30</x><y>336</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone1_DiagV1</name>
     <pv_name>pva://$(P=AWA:SIM:)zone1_energy_MeV</pv_name>
-    <x>185</x><y>356</y><width>110</width><height>22</height>
+    <x>235</x><y>336</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
@@ -895,12 +948,14 @@
   <widget type="label" version="2.0.0">
     <name>zone1_DiagL2</name>
     <text>Energy spread (rms) [%]</text>
-    <x>30</x><y>380</y><width>150</width><height>22</height>
+    <x>30</x><y>362</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone1_DiagV2</name>
     <pv_name>pva://$(P=AWA:SIM:)zone1_energy_spread_pct</pv_name>
-    <x>185</x><y>380</y><width>110</width><height>22</height>
+    <x>235</x><y>362</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
@@ -908,44 +963,80 @@
   <widget type="label" version="2.0.0">
     <name>zone2_DiagHeader</name>
     <text>Zone 2 exit</text>
-    <x>630</x><y>306</y><width>300</width><height>20</height>
-    <font><font family="Liberation Sans" style="BOLD" size="12.0"/></font>
+    <x>630</x><y>276</y><width>300</width><height>28</height>
+    <font><font family="Liberation Sans" style="BOLD" size="18.0"/></font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>zone2_DiagL0</name>
     <text>Charge [pC]</text>
-    <x>630</x><y>332</y><width>150</width><height>22</height>
+    <x>630</x><y>310</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone2_DiagV0</name>
     <pv_name>pva://$(P=AWA:SIM:)zone2_charge_pC</pv_name>
-    <x>785</x><y>332</y><width>110</width><height>22</height>
+    <x>835</x><y>310</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
   </widget>
   <widget type="label" version="2.0.0">
     <name>zone2_DiagL1</name>
-    <text>Energy [MeV]</text>
-    <x>630</x><y>356</y><width>150</width><height>22</height>
+    <text>RMS size x [mm]</text>
+    <x>630</x><y>336</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone2_DiagV1</name>
-    <pv_name>pva://$(P=AWA:SIM:)zone2_energy_MeV</pv_name>
-    <x>785</x><y>356</y><width>110</width><height>22</height>
+    <pv_name>pva://$(P=AWA:SIM:)zone2_sigma_x_mm</pv_name>
+    <x>835</x><y>336</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
   </widget>
   <widget type="label" version="2.0.0">
     <name>zone2_DiagL2</name>
-    <text>Energy spread (rms) [%]</text>
-    <x>630</x><y>380</y><width>150</width><height>22</height>
+    <text>RMS size y [mm]</text>
+    <x>630</x><y>362</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>zone2_DiagV2</name>
-    <pv_name>pva://$(P=AWA:SIM:)zone2_energy_spread_pct</pv_name>
-    <x>785</x><y>380</y><width>110</width><height>22</height>
+    <pv_name>pva://$(P=AWA:SIM:)zone2_sigma_y_mm</pv_name>
+    <x>835</x><y>362</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
+    <precision>3</precision>
+    <precision_from_pv>false</precision_from_pv>
+    <show_units>false</show_units>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>zone2_DiagL3</name>
+    <text>Norm. emittance x [mm.mrad]</text>
+    <x>630</x><y>388</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>zone2_DiagV3</name>
+    <pv_name>pva://$(P=AWA:SIM:)zone2_emitt_x</pv_name>
+    <x>835</x><y>388</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
+    <precision>3</precision>
+    <precision_from_pv>false</precision_from_pv>
+    <show_units>false</show_units>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>zone2_DiagL4</name>
+    <text>Norm. emittance y [mm.mrad]</text>
+    <x>630</x><y>414</y><width>200</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>zone2_DiagV4</name>
+    <pv_name>pva://$(P=AWA:SIM:)zone2_emitt_y</pv_name>
+    <x>835</x><y>414</y><width>120</width><height>24</height>
+    <font><font family="Liberation Sans" style="REGULAR" size="14.0"/></font>
     <precision>3</precision>
     <precision_from_pv>false</precision_from_pv>
     <show_units>false</show_units>
@@ -953,8 +1044,8 @@
   <widget type="label" version="2.0.0">
     <name>ScreenTabsHeader</name>
     <text>Screen images</text>
-    <x>30</x><y>418</y><width>300</width><height>22</height>
-    <font><font family="Liberation Sans" style="BOLD" size="12.0"/></font>
+    <x>30</x><y>454</y><width>300</width><height>28</height>
+    <font><font family="Liberation Sans" style="BOLD" size="18.0"/></font>
   </widget>
   <widget type="navtabs" version="2.0.0">
     <name>ScreenTabs</name>
@@ -996,20 +1087,43 @@
         <group_name></group_name>
       </tab>
     </tabs>
-    <x>30</x><y>446</y><width>640</width><height>540</height>
+    <x>30</x><y>488</y><width>640</width><height>540</height>
     <tab_width>140</tab_width>
     <tab_height>30</tab_height>
+    <rules>
+      <rule name="SelectedScreen" prop_id="active_tab" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;YAG1&quot;">
+          <value>0</value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;YAG2&quot;">
+          <value>1</value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;YAG3&quot;">
+          <value>2</value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;YAG4&quot;">
+          <value>3</value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;YAG5&quot;">
+          <value>4</value>
+        </exp>
+        <exp bool_exp="pvStr0 == &quot;YAG7&quot;">
+          <value>5</value>
+        </exp>
+        <pv_name>loc://selected_screen("YAG1")</pv_name>
+      </rule>
+    </rules>
   </widget>
   <widget type="label" version="2.0.0">
     <name>EditorHeader</name>
     <text>Element editor</text>
-    <x>700</x><y>418</y><width>300</width><height>22</height>
-    <font><font family="Liberation Sans" style="BOLD" size="12.0"/></font>
+    <x>700</x><y>454</y><width>300</width><height>28</height>
+    <font><font family="Liberation Sans" style="BOLD" size="18.0"/></font>
   </widget>
   <widget type="label" version="2.0.0">
     <name>EditorHint</name>
     <text>Click an element above to edit it.</text>
-    <x>700</x><y>446</y><width>370</width><height>22</height>
+    <x>700</x><y>488</y><width>370</width><height>22</height>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
         <exp bool_exp="pvStr0 == &quot;&quot;">
@@ -1023,28 +1137,10 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_SolBF</name>
-    <file>solenoid_controls.bob</file>
-    <macros><NAME>SolBF</NAME><SCALE>SolBF_scaling_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;SolBF&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;SolBF&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_Gun</name>
     <file>cavity_controls.bob</file>
     <macros><NAME>Gun</NAME><POWER>Gun_P_actual</POWER><PHASE>Gun_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1059,10 +1155,28 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_SolBF</name>
+    <file>solenoid_controls.bob</file>
+    <macros><NAME>SolBF</NAME><CURRENT>SolBF_current</CURRENT></macros>
+    <x>700</x><y>488</y><width>370</width><height>126</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;SolBF&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;SolBF&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_SolM</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolM</NAME><SCALE>SolM_scaling_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>SolM</NAME><CURRENT>SolM_current</CURRENT></macros>
+    <x>700</x><y>488</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1077,28 +1191,10 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_L1</name>
-    <file>cavity_controls.bob</file>
-    <macros><NAME>L1</NAME><POWER>L1_P_actual</POWER><PHASE>L1_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;L1&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;L1&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_DT1</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT1</NAME><H>DT1_strength_x</H><V>DT1_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1113,17 +1209,17 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_SolL1</name>
-    <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL1</NAME><SCALE>SolL1_scaling_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <name>editor_L1</name>
+    <file>cavity_controls.bob</file>
+    <macros><NAME>L1</NAME><POWER>L1_P_actual</POWER><PHASE>L1_phid</PHASE></macros>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;SolL1&quot;">
+        <exp bool_exp="pvStr0 == &quot;L1&quot;">
           <value>true</value>
         </exp>
-        <exp bool_exp="pvStr0 != &quot;SolL1&quot;">
+        <exp bool_exp="pvStr0 != &quot;L1&quot;">
           <value>false</value>
         </exp>
         <pv_name>loc://selected_element("")</pv_name>
@@ -1134,7 +1230,7 @@
     <name>editor_DT2</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT2</NAME><H>DT2_strength_x</H><V>DT2_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1149,10 +1245,28 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_SolL1</name>
+    <file>solenoid_controls.bob</file>
+    <macros><NAME>SolL1</NAME><CURRENT>SolL1_current</CURRENT></macros>
+    <x>700</x><y>488</y><width>370</width><height>126</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;SolL1&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;SolL1&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L2</name>
     <file>cavity_controls.bob</file>
     <macros><NAME>L2</NAME><POWER>L2_P_actual</POWER><PHASE>L2_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1167,28 +1281,10 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_SolL2</name>
-    <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL2</NAME><SCALE>SolL2_scaling_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;SolL2&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;SolL2&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_DT3</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT3</NAME><H>DT3_strength_x</H><V>DT3_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1203,10 +1299,28 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_SolL2</name>
+    <file>solenoid_controls.bob</file>
+    <macros><NAME>SolL2</NAME><CURRENT>SolL2_current</CURRENT></macros>
+    <x>700</x><y>488</y><width>370</width><height>126</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;SolL2&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;SolL2&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L3</name>
     <file>cavity_controls.bob</file>
     <macros><NAME>L3</NAME><POWER>L3_P_actual</POWER><PHASE>L3_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1221,28 +1335,10 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_DT4</name>
-    <file>corrector_controls.bob</file>
-    <macros><NAME>DT4</NAME><H>DT4_strength_x</H><V>DT4_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;DT4&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;DT4&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_SolL4</name>
     <file>solenoid_controls.bob</file>
-    <macros><NAME>SolL4</NAME><SCALE>SolL4_scaling_factor</SCALE></macros>
-    <x>700</x><y>446</y><width>370</width><height>126</height>
+    <macros><NAME>SolL4</NAME><CURRENT>SolL4_current</CURRENT></macros>
+    <x>700</x><y>488</y><width>370</width><height>126</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1257,17 +1353,17 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_L4</name>
-    <file>cavity_controls.bob</file>
-    <macros><NAME>L4</NAME><POWER>L4_P_actual</POWER><PHASE>L4_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <name>editor_DT4</name>
+    <file>corrector_controls.bob</file>
+    <macros><NAME>DT4</NAME><H>DT4_strength_x</H><V>DT4_strength_y</V></macros>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;L4&quot;">
+        <exp bool_exp="pvStr0 == &quot;DT4&quot;">
           <value>true</value>
         </exp>
-        <exp bool_exp="pvStr0 != &quot;L4&quot;">
+        <exp bool_exp="pvStr0 != &quot;DT4&quot;">
           <value>false</value>
         </exp>
         <pv_name>loc://selected_element("")</pv_name>
@@ -1278,7 +1374,7 @@
     <name>editor_DT5</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT5</NAME><H>DT5_strength_x</H><V>DT5_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1293,10 +1389,28 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_L4</name>
+    <file>cavity_controls.bob</file>
+    <macros><NAME>L4</NAME><POWER>L4_P_actual</POWER><PHASE>L4_phid</PHASE></macros>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;L4&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;L4&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_L5</name>
     <file>cavity_controls.bob</file>
     <macros><NAME>L5</NAME><POWER>L5_P_actual</POWER><PHASE>L5_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1311,28 +1425,10 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
-    <name>editor_L6</name>
-    <file>cavity_controls.bob</file>
-    <macros><NAME>L6</NAME><POWER>L6_P_actual</POWER><PHASE>L6_phid</PHASE></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
-    <visible>false</visible>
-    <rules>
-      <rule name="Selected" prop_id="visible" out_exp="false">
-        <exp bool_exp="pvStr0 == &quot;L6&quot;">
-          <value>true</value>
-        </exp>
-        <exp bool_exp="pvStr0 != &quot;L6&quot;">
-          <value>false</value>
-        </exp>
-        <pv_name>loc://selected_element("")</pv_name>
-      </rule>
-    </rules>
-  </widget>
-  <widget type="embedded" version="2.0.0">
     <name>editor_DT6</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT6</NAME><H>DT6_strength_x</H><V>DT6_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1347,10 +1443,28 @@
     </rules>
   </widget>
   <widget type="embedded" version="2.0.0">
+    <name>editor_L6</name>
+    <file>cavity_controls.bob</file>
+    <macros><NAME>L6</NAME><POWER>L6_P_actual</POWER><PHASE>L6_phid</PHASE></macros>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
+    <visible>false</visible>
+    <rules>
+      <rule name="Selected" prop_id="visible" out_exp="false">
+        <exp bool_exp="pvStr0 == &quot;L6&quot;">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pvStr0 != &quot;L6&quot;">
+          <value>false</value>
+        </exp>
+        <pv_name>loc://selected_element("")</pv_name>
+      </rule>
+    </rules>
+  </widget>
+  <widget type="embedded" version="2.0.0">
     <name>editor_DT7</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT7</NAME><H>DT7_strength_x</H><V>DT7_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1368,7 +1482,7 @@
     <name>editor_DT8</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT8</NAME><H>DT8_strength_x</H><V>DT8_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1386,7 +1500,7 @@
     <name>editor_DQ1</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ1</NAME><K1>DQ1_K1</K1><GRADIENT>DQ1_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1404,7 +1518,7 @@
     <name>editor_DQ2</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ2</NAME><K1>DQ2_K1</K1><GRADIENT>DQ2_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1422,7 +1536,7 @@
     <name>editor_DQ3</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ3</NAME><K1>DQ3_K1</K1><GRADIENT>DQ3_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1440,7 +1554,7 @@
     <name>editor_DT9</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT9</NAME><H>DT9_strength_x</H><V>DT9_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1458,7 +1572,7 @@
     <name>editor_DT10</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT10</NAME><H>DT10_strength_x</H><V>DT10_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1476,7 +1590,7 @@
     <name>editor_DQ4</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ4</NAME><K1>DQ4_K1</K1><GRADIENT>DQ4_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1494,7 +1608,7 @@
     <name>editor_DQ5</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ5</NAME><K1>DQ5_K1</K1><GRADIENT>DQ5_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1512,7 +1626,7 @@
     <name>editor_DQ6</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ6</NAME><K1>DQ6_K1</K1><GRADIENT>DQ6_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1530,7 +1644,7 @@
     <name>editor_DQ7</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ7</NAME><K1>DQ7_K1</K1><GRADIENT>DQ7_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1548,7 +1662,7 @@
     <name>editor_DT12</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>DT12</NAME><H>DT12_strength_x</H><V>DT12_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1566,7 +1680,7 @@
     <name>editor_DQ8</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ8</NAME><K1>DQ8_K1</K1><GRADIENT>DQ8_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1584,7 +1698,7 @@
     <name>editor_DQ9</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ9</NAME><K1>DQ9_K1</K1><GRADIENT>DQ9_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1602,7 +1716,7 @@
     <name>editor_ET2</name>
     <file>corrector_controls.bob</file>
     <macros><NAME>ET2</NAME><H>ET2_strength_x</H><V>ET2_strength_y</V></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">
@@ -1620,7 +1734,7 @@
     <name>editor_DQ10</name>
     <file>quad_controls.bob</file>
     <macros><NAME>DQ10</NAME><K1>DQ10_K1</K1><GRADIENT>DQ10_gradient</GRADIENT></macros>
-    <x>700</x><y>446</y><width>370</width><height>192</height>
+    <x>700</x><y>488</y><width>370</width><height>192</height>
     <visible>false</visible>
     <rules>
       <rule name="Selected" prop_id="visible" out_exp="false">

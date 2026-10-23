@@ -12,10 +12,10 @@ _TWIN_DIR = pykern.pkio.py_path(__file__).dirpath().dirpath().join("twin")
 _N_PARTICLES = 300
 # Tests run single-threaded so they never take every core on a big machine.
 _THREADS = 1
-_SOLENOID = "SolBF_scaling_factor"
+_SOLENOID = "SolBF_current"
 
 
-def test_reset_restores_solenoid_scaling_factor():
+def test_reset_restores_solenoid_current():
     sys.path.insert(0, str(_TWIN_DIR))
     import RF_Track as rft
     from pykern import pkunit
@@ -80,15 +80,18 @@ def test_handoff_keeps_charge_energy_and_bunch_length():
     chain = build_chain(n_particles=_N_PARTICLES, threads=_THREADS)
     zone1, zone2 = chain.lume_model_instances
     chain.set({})
-    for n1, n2 in zip(
-        actions.diagnostic_variables("zone1_"), actions.diagnostic_variables("zone2_")
+    # zone2 serves no energy of its own (magnetic transport doesn't change
+    # it), so measure its bunch the way zone1's are
+    for v1, v2 in zip(
+        actions.energy_diagnostic_variables("zone1_").values(),
+        actions.energy_diagnostic_variables("zone2_").values(),
     ):
-        a = zone1.get([n1])[n1]
-        b = zone2.get([n2])[n2]
+        a = v1._get(zone1.simulator)
+        b = v2._get(zone2.simulator)
         pkunit.pkok(
             abs(a - b) < 1e-3 * abs(a),
             "{} changed in handoff: zone1={} zone2={}",
-            n2,
+            v2.name,
             a,
             b,
         )
@@ -103,9 +106,10 @@ def test_handoff_keeps_charge_energy_and_bunch_length():
     )
 
 
-def test_zone1_scaling_factor_changes_the_beam():
-    """`<solenoid>_scaling_factor` is RF-Track's own live scale of the
-    field: setting it re-tracks the same beamline, and focuses differently."""
+def test_zone1_solenoid_current_changes_the_beam():
+    """`<solenoid>_current` sets RF-Track's own live scale of the field
+    (current / reference current * 1e-4): setting it re-tracks the same
+    beamline, and focuses differently."""
     sys.path.insert(0, str(_TWIN_DIR))
     import RF_Track as rft
     from pykern import pkunit
@@ -122,8 +126,9 @@ def test_zone1_scaling_factor_changes_the_beam():
     before = _sigma_x()
     z.set({_SOLENOID: nominal * 1.5})
     pkunit.pkok(z.simulator.beamline is beamline, "beamline was rebuilt")
+    pkunit.pkeq(550.0, nominal)
     pkunit.pkeq(
-        nominal * 1.5,
+        nominal * 1.5 / 550.0 * 1e-4,
         z.simulator.find_element("SolBF").get_scaling_factor(),
     )
     pkunit.pkok(

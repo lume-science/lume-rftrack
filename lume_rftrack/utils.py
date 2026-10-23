@@ -182,20 +182,16 @@ _STAT_SCALE_VOLUME = numpy.array(
         1,  # Bz: T
     ]
 )
-# %S (Lattice's position token) is already in meters -- verified empirically
-# against Volume's %mean_Z (raw millimeters) for the same physical length --
-# unlike every other position/size quantity (%mean_x, %sigma_x, %sigma_t,
+# %S (Lattice's position token) is in meters (Volume's %mean_Z is raw
+# millimeters for the same physical length), unlike every other position/size quantity (%mean_x, %sigma_x, %sigma_t,
 # rmax*, ...), which stays in the same raw millimeters in both Lattice and
 # Volume. So only the first ("s") entry differs from _STAT_SCALE_VOLUME.
 _STAT_SCALE_LATTICE = numpy.concatenate([[1], _STAT_SCALE_VOLUME[1:]])
 
-# mass [MeV/c^2], charge [e] -- deliberately just these three, the species
-# every version of beamphysics (nee pmd_beamphysics) this wrapper has been
-# tested against has recognized, even though newer releases know more
-# (beamphysics.species.MASS_OF as of 0.16.1 also has H-/H2+/muon/
-# antimuon). A ParticleGroup has no "other"/generic-ion species to fall
-# back to regardless, so bunch6d_to_particlegroup() can only infer a
-# species when the bunch's own mass/charge matches one of these.
+# mass [MeV/c^2], charge [e] of the species a ParticleGroup is given by
+# name here. A ParticleGroup has no "other"/generic-ion species to fall
+# back to, so bunch6d_to_particlegroup() can only infer a species when the
+# bunch's own mass/charge matches one of these.
 _PARTICLEGROUP_SPECIES = {
     "electron": (
         scipy.constants.physical_constants["electron mass energy equivalent in MeV"][0],
@@ -340,6 +336,7 @@ def load_field_map_2d(spec):
     `(Er, Ez, hr, hz)`: two `#`-commented header lines (`numpy.loadtxt()`
     skips these on its own), then rows of Z [cm], R [cm], Ez [MV/m],
     Er [MV/m], |E| [MV/m], H [A/m]. Not rescaled, unlike a 1D map.
+    `write_field_map_2d()` writes this format.
     """
     spec = PKDict(spec)
     t = numpy.loadtxt(spec.file)
@@ -488,12 +485,12 @@ def save_stats(volume, filename):
     fields = _STAT_FIELDS_LATTICE if is_lattice else _STAT_FIELDS_VOLUME
     t = numpy.array(volume.get_transport_table(fields))
     if is_lattice:
-        # %sigma_pt (Lattice) is a RELATIVE momentum spread in permille
-        # (matching this app's own beam.sigma_pt field), unlike %sigma_Pz
+        # %sigma_pt (Lattice) is a RELATIVE momentum spread in permille,
+        # unlike %sigma_Pz
         # (Volume, an absolute momentum spread in MeV/c); dividing by 1000
         # and multiplying by %mean_P approximates that same absolute
-        # quantity, verified empirically against Volume's own %sigma_Pz for
-        # an equivalent beamline.
+        # quantity, as Volume's %sigma_Pz gives for an equivalent
+        # beamline.
         names = fields.split()
         i = names.index("%sigma_pt")
         t[:, i] = t[:, i] / 1000.0 * t[:, names.index("%mean_P")]
@@ -506,6 +503,34 @@ def save_stats(volume, filename):
         filename,
         numpy.hstack([t, numpy.array(e)[:, 2:3], numpy.array(b)[:, 2:3]])
         * (_STAT_SCALE_LATTICE if is_lattice else _STAT_SCALE_VOLUME),
+    )
+
+
+def write_field_map_2d(filename, Er, Ez, hr, hz):
+    """Write `Er`, `Ez` [V/m] (real `(nz, nr)` arrays on a grid with
+    steps `hr`, `hz` [m], from r = z = 0) to `filename` in the
+    SUPERFISH-style format `load_field_map_2d()` reads, its exact
+    inverse: two `#` header lines, then rows of Z [cm], R [cm],
+    Ez [MV/m], Er [MV/m], |E| [MV/m], H [A/m], Z varying fastest. H isn't
+    known here and isn't read, so it is written as 0.
+    """
+    Er = numpy.asarray(Er)
+    Ez = numpy.asarray(Ez)
+    nz, nr = Ez.shape
+    z, r = numpy.meshgrid(
+        numpy.arange(nz) * hz * 100, numpy.arange(nr) * hr * 100, indexing="ij"
+    )
+    numpy.savetxt(
+        filename,
+        numpy.column_stack(
+            [
+                a.ravel(order="F")
+                for a in (z, r, Ez / 1e6, Er / 1e6, numpy.hypot(Ez, Er) / 1e6)
+            ]
+            + [numpy.zeros(nz * nr)]
+        ),
+        header="written by lume_rftrack.utils.write_field_map_2d()\n"
+        + "Z [cm] R [cm] Ez [MV/m] Er [MV/m] |E| [MV/m] H [A/m] (H not recorded)",
     )
 
 

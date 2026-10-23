@@ -6,28 +6,29 @@ tracked bunch becomes zone2's source beam. Both zones are served as EPICS
 PVs and watched in Phoebus; changing a zone1 or zone2 parameter re-tracks
 the chain and updates both zones' diagnostics.
 
-Two things define its shape:
-
-- No archive/selector step. RF-Track is fast enough to re-track both zones
-  live on every change, so nothing needs pre-recording. "Fast
-  enough" means zone2 (well under a second); zone1's own run -- field-map
-  I/O, autophase, and space charge -- takes tens of seconds, still handled
-  live (the put is acknowledged at once and the served values update when
-  the track finishes), just not instant.
-- Both zones are live-tunable, not just the downstream one.
+RF-Track is fast enough to re-track both zones live on every change, so
+nothing is pre-recorded. Zone2 re-tracks in well under a second; zone1's
+own run -- field-map I/O, autophase, and space charge -- takes tens of
+seconds (the put is acknowledged at once and the served values update
+when the track finishes). Both zones are live-tunable, not just the
+downstream one.
 
 ## How the pieces fit
 
-The physics is two scripts -- "AWA Zone 1" and "AWA Zone 2" -- kept in
-`twin/sources/`, which build their beamlines directly with RF-Track's own
-API (`rft.RF_FieldMap_1d`, `rft.Quadrupole`, ...; zone1's field maps are
-in `twin/sources/zone1_lib/`). Run one directly to run its simulation;
-`twin/zone_model.py` runs it without its last line, the `main()` call.
-Each defines `build_beamline()`, `build_bunch()`, and (zone1)
-`autophase()`, and gets the rest (`apply_space_charge()`, `build_model()`,
-field-map readers, result writers) from `lume_rftrack`; the twin reuses
-them as they are, so the lattice, bunch, autophase and space-charge setup
-come from them.
+The physics is two scripts -- the code Sirepo's rftrack app generates for
+its "AWA Zone #1" and "AWA Zone #2" sims -- kept in `twin/sources/` (zone1's
+field maps are in `twin/sources/zone1_lib/`). Each is a table of
+elements, `ELEMENTS`, that `build_beamline()` turns into RF-Track objects.
+Run one directly to run its simulation; `twin/zone_model.py` runs it
+without its last line, the `main()` call. Each defines `build_beamline()`,
+`build_bunch()`, and (zone1) `autophase()`, and gets the rest
+(`apply_space_charge()`, `build_model()`, field-map readers, result
+writers) from `lume_rftrack`; the twin reuses them as they are, so the
+lattice, bunch, autophase and space-charge setup come from them. To update
+the twin, regenerate the sims in Sirepo and replace the two files. The one
+thing the twin changes is zone1's field-map solenoids: it sets their scale
+factor live through RF-Track's `scaling_factor`, rather than scaling the
+map as the script does, so `<name>_current` [A] stays settable.
 
 Each zone is the `lume_rftrack.model.LUMERFTrackModel` that
 `lume_rftrack.model.build_model()` returns for its script
@@ -35,8 +36,9 @@ Each zone is the `lume_rftrack.model.LUMERFTrackModel` that
 class. It already exposes every element with a live setter (gradient,
 phid, P_actual, strength_x/strength_y), found from its RF-Track class.
 Each zone registers the twin's own variables on it: zone1 each field-map
-solenoid's `<name>_scaling_factor`, RF-Track's own live scale of its
-field, and zone2 each quadrupole's normalized `<name>_K1`, which converts
+solenoid's `<name>_current` [A] (550, 440, 1, 1, 1; set as RF-Track's own
+live scale of its field, current / the map's reference current * 1e-4),
+and zone2 each quadrupole's normalized `<name>_K1`, which converts
 with zone2's design rigidity (60 MeV/c, as its script builds the
 quadrupoles). Every one is set on the element and re-tracks; neither zone
 rebuilds its beamline.
@@ -50,9 +52,11 @@ zone1 hands it one. The chain's `reset()` also hands zone1's reset beam on
 to zone2, which `StagedModel.reset()` alone doesn't.
 
 `twin/actions.py` holds the twin's own PVs as `lume.actions` variables:
-each zone's `charge_pC`/`energy_MeV`/`energy_spread_pct`,
+zone1's `charge_pC`/`energy_MeV`/`energy_spread_pct` and zone2's
+`charge_pC`/`sigma_x_mm`/`sigma_y_mm`/`emitt_x`/`emitt_y` (zone2's
+magnetic transport doesn't change its energy),
 each screen's `<name>_image`, zone2's `<name>_K1`, and zone1's
-`<name>_scaling_factor`.
+`<name>_current`.
 
 Space charge is zone1 only (zone2 is pure magnetic transport). Neither
 script's thread count is used; `build_chain(threads=...)` sets one (default
@@ -62,7 +66,7 @@ and 44 s at 8 and 47 s at 12 for 5000 -- so try `serve.py --threads`.
 
 `twin/serve.py` serves the chain's variables as PVs through `lume-pva`:
 both zones' params read-write,
-each zone's three diagnostics read-only.
+each zone's diagnostics read-only.
 
 `phoebus/generate_zone_twin_display.py` generates a to-scale, clickable
 synoptic (`zone_twin.bob`): each element is a colored
@@ -80,11 +84,12 @@ floor-plan to link against, so this one is built from the scripts' own
 beamlines (positions, lengths, and, from each element's RF-Track class,
 which PVs it controls).
 
-A screen (YAG1-4, YAG5, YAG7) is drawn on the floor plan but not
-clickable. Its image is
-picked from the `ScreenTabs` column below the floor plan instead: a
-`navtabs` widget (one tab per screen) that swaps a single embedded
-`screen_view.bob` in place as you click a different tab. `screen_view.bob`
+A screen (YAG1-4, YAG5, YAG7) is drawn on the floor plan too. Clicking it,
+or its tab in the `ScreenTabs` column below the floor plan, shows its
+image: a `navtabs` widget (one tab per screen) swaps a single embedded
+`screen_view.bob` in place, and a screen's button writes its name to a
+local PV (`loc://selected_screen`) that a rule on the `navtabs` follows.
+`screen_view.bob`
 is an `image` widget on that screen's own `<name>_image` PV: a 64x64
 histogram of the beam there (computed from `get_bunch_at_screens()` when
 the PV is read). The histogram's axis range is each screen's own
@@ -112,19 +117,20 @@ python serve.py
 `--threads` sets the RF-Track thread count and `--n-particles` the number of
 macroparticles zone1 tracks; `python serve.py --help` shows their defaults.
 
-Wait for `serving 75 variables` (zone1's first build -- field-map I/O,
+Wait for `serving 77 variables` (zone1's first build -- field-map I/O,
 autophase, and a space-charge-tracked run -- takes tens of seconds at the
 default particle count) and leave the terminal open.
 
 ### Check the PVs (optional)
 
-From another terminal, with the EPICS command-line tools:
+Not needed to run the twin or Phoebus. If the EPICS command-line tools are
+installed, you can read the PVs from another terminal:
 
 ```bash
-pvget AWA:SIM:STATUS AWA:SIM:SolBF_scaling_factor AWA:SIM:zone2_energy_MeV
+pvget AWA:SIM:STATUS AWA:SIM:SolBF_current AWA:SIM:zone1_energy_MeV
 ```
 
-Expect `Idle`, `0.0001` and about `63` (MeV). `AWA:SIM:STATUS` is `Idle` or
+Expect `Idle`, `550` (A) and about `63` (MeV). `AWA:SIM:STATUS` is `Idle` or
 `Simulating`, and is `Simulating` while the twin re-tracks.
 
 ### Open the display in Phoebus
@@ -161,10 +167,11 @@ rather see those dumps (e.g. to diagnose an actual freeze).
   parameter retracks both zones (several seconds); changing a zone2
   element's retracks only zone2 (well under a second).
 - The two "Zone N exit" readback blocks below the legend show each
-  zone's charge/energy/energy spread after its own last track.
-- **"Screen images":** click a tab in the column below the readbacks to
-  see that screen's beam image. Screens on the floor plan above are not
-  themselves clickable.
+  zone's diagnostics after its own last track: zone1's charge, energy and
+  energy spread, zone2's charge, rms size and normalized emittance in x
+  and y.
+- **"Screen images":** click a tab in the column below the readbacks, or
+  a screen on the floor plan above, to see that screen's beam image.
 
 To stop, press Ctrl-C in the server terminal and close Phoebus.
 
@@ -174,7 +181,8 @@ To stop, press Ctrl-C in the server terminal and close Phoebus.
   2000 particles, scaling with particle count. Every
   zone1 PV put pays this cost; a put is acknowledged at once, so a client
   that needs the result must wait for the status PV to return to `Idle`.
-- Misalignments (`*misal` in both zones' defaults) are not exposed as PVs;
+- Element misalignments (each element's `dx`, `dy`, `dz`, `rx`, `ry`, `rz` in
+  the sources) are not exposed as PVs;
   neither is zone1's/zone2's own bunch-generation/tracking configuration
   (particle count, integrator step size, ...), which `serve.py`'s
   `--n-particles` is the only exposed knob for.

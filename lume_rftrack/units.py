@@ -70,6 +70,8 @@ UNITS = PKDict(
     direction="1",
     entrance_aperture="m",
     exit_aperture="m",
+    # an SBend's fringe field integral, measured by archive._fint()
+    fint="1",
     frequency="Hz",
     gradient="T/m",
     h="1/m",
@@ -92,10 +94,9 @@ UNITS = PKDict(
     phid="deg",
     position=None,
     resolution="mm",
-    # not in the reference manual (get_resolution_t()/the constructor's
-    # third argument predate this copy of the manual) -- inferred by
-    # analogy with every other RF-Track time-like quantity (t0,
-    # set_time_window(), sigma_t) all documented as "mm/c".
+    # not in the reference manual -- inferred by analogy with every other
+    # RF-Track time-like quantity (t0, set_time_window(), sigma_t), all
+    # documented as "mm/c".
     resolution_t="mm/c",
     sc_nsteps="1",
     scaling_factor="1",

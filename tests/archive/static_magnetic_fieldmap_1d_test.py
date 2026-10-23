@@ -7,21 +7,18 @@ get_field() instead -- and
 get_field(x, y, z, t)'s coordinate arguments are documented (RF-Track
 reference manual, section 5.1.2) as millimeters, not meters like every
 other length-valued getter/setter in this module (get_length(),
-get_z0()/get_z1(), set_s0()/set_s1(), Volume.add()'s x/y/z, ...). Getting
-this wrong silently samples only the field map's first ~1mm, which looks
-like a small, nearly-flat, physically-plausible-looking value if you
-aren't comparing against the real source file -- this test exists because
-that's exactly what happened during development, caught only by comparing
-the sampled peak against ground truth from a real field-map file.
+get_z0()/get_z1(), set_s0()/set_s1(), Volume.add()'s x/y/z, ...). Sampling
+with meters instead silently covers only the field map's first ~1mm,
+which looks like a small, nearly-flat, physically plausible value unless
+it is compared against the source profile, so this test does.
 """
 
 
 def _build_solenoid(rft, numpy, peak_t=0.3):
     # a bell-curve profile peaking mid-element, not at an edge -- a flat
     # or monotonic profile wouldn't catch a coordinate-unit bug the way a
-    # real solenoid's shape does (the bug this test is named for produces
-    # a profile that still looks superficially plausible: small and
-    # slowly varying)
+    # real solenoid's shape does (a profile sampled in the wrong unit
+    # still looks superficially plausible: small and slowly varying)
     bz = peak_t * numpy.exp(-((numpy.linspace(-1, 1, 101)) ** 2) * 4)
     sol = rft.Static_Magnetic_FieldMap_1d(bz, 0.01)
     sol.set_name("SOL1")
@@ -97,7 +94,7 @@ def test_archive_round_trip():
     )
     pkunit.pkok(
         numpy.max(numpy.abs(bz_archived)) > 0.01,
-        "archived field looks suspiciously small (the mm-vs-m coordinate bug"
-        " this test is named for produces a tiny, near-constant profile): {}",
+        "archived field looks suspiciously small (sampling z in meters instead"
+        " of mm gives a tiny, near-constant profile): {}",
         bz_archived,
     )

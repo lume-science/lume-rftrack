@@ -5,15 +5,428 @@ Simulation notes:
 
 """
 
-import pathlib
-
-import numpy
-import RF_Track as rft
 from pykern.pkcollections import PKDict
-
-import lume_rftrack.model
+import RF_Track as rft
+import math
+import numpy
+import lume_rftrack.simulator
 import lume_rftrack.utils
 
+ELEMENTS = [
+    PKDict(
+        name='Gun',
+        elemedge=0.0,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.rf_gunG4.dat',
+        rescale_mode='peak',
+        target_field=80000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='SolBF',
+        elemedge=-0.5,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='solenoid_fieldmap',
+        cubic=False,
+        file='SOLENOID-fieldMapFile.sol_bucking-focusing_pm550A.dat',
+        rescale_mode='factor',
+        scale_factor=0.0001,
+    ),
+    PKDict(
+        name='SolM',
+        elemedge=0.0,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='solenoid_fieldmap',
+        cubic=False,
+        file='SOLENOID-fieldMapFile.sol_matching_m440A.dat',
+        rescale_mode='factor',
+        scale_factor=0.0001,
+    ),
+    PKDict(
+        name='DT1',
+        elemedge=0.701802,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='L1',
+        elemedge=0.576433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='DT2',
+        elemedge=1.63525,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='SolL1',
+        elemedge=1.544,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='solenoid_fieldmap',
+        cubic=False,
+        file='SOLENOID-fieldMapFile.sol_linacLB_500A.dat',
+        rescale_mode='factor',
+        scale_factor=2.0000000000000002e-07,
+    ),
+    PKDict(
+        name='YAG1',
+        elemedge=2.9,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='screen',
+        width=0.0,
+        height=0.0,
+    ),
+    PKDict(
+        name='L2',
+        elemedge=3.306433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='DT3',
+        elemedge=4.3053,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='SolL2',
+        elemedge=4.12,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='solenoid_fieldmap',
+        cubic=False,
+        file='SOLENOID-fieldMapFile.sol_linac_500A.dat',
+        rescale_mode='factor',
+        scale_factor=2e-07,
+    ),
+    PKDict(
+        name='L3',
+        elemedge=4.856433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='YAG2',
+        elemedge=6.292,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='screen',
+        width=0.0,
+        height=0.0,
+    ),
+    PKDict(
+        name='SolL4',
+        elemedge=5.881,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='solenoid_fieldmap',
+        cubic=False,
+        file='SOLENOID-fieldMapFile.sol_linac_500A.dat',
+        rescale_mode='factor',
+        scale_factor=2e-07,
+    ),
+    PKDict(
+        name='DT4',
+        elemedge=5.84835,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='DT5',
+        elemedge=7.0358,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='L4',
+        elemedge=6.986433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='L5',
+        elemedge=8.326433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='YAG3',
+        elemedge=9.525,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='screen',
+        width=0.0,
+        height=0.0,
+    ),
+    PKDict(
+        name='DT6',
+        elemedge=9.7917,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.0381,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='L6',
+        elemedge=9.736433,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='cavity_fieldmap',
+        cubic=False,
+        file='CAVITY-fieldMapFile.linac.dat',
+        rescale_mode='peak',
+        target_field=22000000.0,
+        frequency_hz=1300000000.0,
+        phase_deg=0.0,
+    ),
+    PKDict(
+        name='DT7',
+        elemedge=11.120374,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='corrector',
+        l=0.085852,
+        h_kick=0.0,
+        v_kick=0.0,
+    ),
+    PKDict(
+        name='YAG4',
+        elemedge=11.372,
+        aperture_shape='circular',
+        aperture_x=0.015,
+        aperture_y=0.015,
+        dx=0.0,
+        dy=0.0,
+        dz=0.0,
+        rx=0.0,
+        ry=0.0,
+        rz=0.0,
+        kind='screen',
+        width=0.0,
+        height=0.0,
+    ),
+]
 BUNCH = PKDict(
     charge=-1.0,
     mass_mev=0.51099895069,
@@ -23,10 +436,10 @@ BUNCH = PKDict(
     c_sig_x=3.0,
     c_sig_y=3.0,
     cathode=True,
-    dist_pz="fd_300",
-    dist_x="r",
-    dist_y="g",
-    dist_z="plateau",
+    dist_pz='fd_300',
+    dist_x='r',
+    dist_y='g',
+    dist_z='plateau',
     e_photon=4.73,
     lt=0.006,
     noise_reduc=True,
@@ -37,58 +450,43 @@ BUNCH = PKDict(
     ref_ekin=0,
     ref_zpos=0,
     rt=0.0003,
+    sig_t=0.0012,
     sig_x=1.67,
-    species="electrons",
+    sig_y=1.67,
+    species='electrons',
 )
 SETTINGS = PKDict(
-    num_threads=1,
+    num_threads=12,
     space_charge=PKDict(
-        kind="pic",
+        kind='pic',
         dt_mm=3,
         grid=(
             8,
             8,
             16,
         ),
-        mirror_m=0.0,
+        mirror_m=0,
         smooth=0.5,
     ),
     tracking_range_m=(
-        0.0,
+        0,
         11.372,
     ),
+    odeint_algorithm='rkf45',
+    odeint_epsabs=1e-06,
+    odeint_epsrel=0,
     volume_dt_mm=0.5,
-    volume_tt_dt_mm=10.0,
+    volume_tt_dt_mm=10,
 )
 
 
-# Every element's aperture: a circular 15 mm half-width beam pipe
-_APERTURE_M = 0.015
-
-# The field-map files, next to this file
-_LIB_DIR = pathlib.Path(__file__).resolve().parent / "zone1_lib"
-
-# Every linac cavity's field map
-_LINAC = "CAVITY-fieldMapFile.linac.dat"
-
-
-def autophase(volume):
-    # Autophase against a single on-axis reference particle, then track
-    # the real bunch through this SAME (now-phased) volume; do not
-    # rebuild it. Volume.autophase() sets each RF element's internal t0
-    # directly and .track() uses that state as-is -- get_phid() does not
-    # reflect it (it always reads back the phid the element was
-    # constructed with), so reading it back to "convert" t0 into an
-    # equivalent phid for a rebuilt volume silently produces the unphased
-    # result instead of the true autophased state.
+def autophase(volume, bunch):
     # A Cathode or From File reference particle starts at rest
     # (X,Px,Y,Py,Z,Pz all 0), not at the design momentum, since both are
     # snapshots of a bunch that begins from (near) rest, not an
     # already-accelerated analytic (Twiss) distribution.
     p0 = rft.Bunch6dT(
-        numpy.array(
-            [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, BUNCH.mass_mev, BUNCH.charge, 1.0, 0.0]]
-        )
+        numpy.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, BUNCH.mass_mev, BUNCH.charge, 1.0, 0.0]])
     )
     volume.unset_t0()
     volume.autophase(p0)
@@ -100,46 +498,25 @@ def build_beamline():
     # a bucking/focusing solenoid's B field genuinely occupy the same
     # physical space in a real photoinjector.
     v = rft.Volume()
-    for z, e in (
-        (
-            -0.5,
-            _solenoid(
-                "SolBF", "SOLENOID-fieldMapFile.sol_bucking-focusing_pm550A.dat", 1e-4
-            ),
-        ),
-        (0.0, _cavity("Gun", "CAVITY-fieldMapFile.rf_gunG4.dat", 80e6)),
-        (0.0, _solenoid("SolM", "SOLENOID-fieldMapFile.sol_matching_m440A.dat", 1e-4)),
-        (0.576433, _cavity("L1", _LINAC, 22e6)),
-        (0.701802, _named("DT1", rft.Corrector(0.0381))),
-        (1.544, _solenoid("SolL1", "SOLENOID-fieldMapFile.sol_linacLB_500A.dat", 2e-7)),
-        (1.63525, _named("DT2", rft.Corrector(0.0381))),
-        (2.9, _named("YAG1", rft.Screen())),
-        (3.306433, _cavity("L2", _LINAC, 22e6)),
-        (4.12, _solenoid("SolL2", "SOLENOID-fieldMapFile.sol_linac_500A.dat", 2e-7)),
-        (4.3053, _named("DT3", rft.Corrector(0.0381))),
-        (4.856433, _cavity("L3", _LINAC, 22e6)),
-        (5.84835, _named("DT4", rft.Corrector(0.0381))),
-        (5.881, _solenoid("SolL4", "SOLENOID-fieldMapFile.sol_linac_500A.dat", 2e-7)),
-        (6.292, _named("YAG2", rft.Screen())),
-        (6.986433, _cavity("L4", _LINAC, 22e6)),
-        (7.0358, _named("DT5", rft.Corrector(0.0381))),
-        (8.326433, _cavity("L5", _LINAC, 22e6)),
-        (9.525, _named("YAG3", rft.Screen())),
-        (9.736433, _cavity("L6", _LINAC, 22e6)),
-        (9.7917, _named("DT6", rft.Corrector(0.0381))),
-        (11.120374, _named("DT7", rft.Corrector(0.085852))),
-        (11.372, _named("YAG4", rft.Screen())),
-    ):
-        e.set_aperture(_APERTURE_M, _APERTURE_M, "circular")
-        v.add(e, 0.0, 0.0, z, 0.0, 0.0, 0.0)
+    for spec in ELEMENTS:
+        v.add(
+            _build_element(spec),
+            spec.dx,
+            spec.dy,
+            spec.elemedge + spec.dz,
+            spec.rz,
+            spec.rx,
+            spec.ry,
+        )
     v.set_s0(SETTINGS.tracking_range_m[0])
     v.set_s1(SETTINGS.tracking_range_m[1])
-    v.odeint_algorithm = "rkf45"
-    # RF-Track's default, 1e-3, leaves the beam about 25% larger at YAG4
-    # and the gun autophased about 0.4 deg off
-    v.odeint_epsabs = 1e-6
+    v.odeint_algorithm = SETTINGS.odeint_algorithm
+    v.odeint_epsabs = SETTINGS.odeint_epsabs
+    v.odeint_epsrel = SETTINGS.odeint_epsrel
     v.dt_mm = SETTINGS.volume_dt_mm
     v.tt_dt_mm = SETTINGS.volume_tt_dt_mm
+    if "t_max_mm" in SETTINGS:
+        v.t_max_mm = SETTINGS.t_max_mm
     # nonzero: RF_Track prints tracking progress (e.g. "t = ... mm/c")
     # straight to stdout as track() advances, which is run.log's own
     # content with no further plumbing needed
@@ -164,9 +541,11 @@ def build_bunch():
     g.dist_x = BUNCH.dist_x
     g.dist_y = BUNCH.dist_y
     g.sig_x = BUNCH.sig_x
+    g.sig_y = BUNCH.sig_y
     g.dist_z = BUNCH.dist_z
     g.rt = BUNCH.rt
     g.lt = BUNCH.lt
+    g.sig_t = BUNCH.sig_t
     g.c_sig_x = BUNCH.c_sig_x
     g.c_sig_y = BUNCH.c_sig_y
     g.c_sig_t = BUNCH.c_sig_t
@@ -182,45 +561,106 @@ def main():
     lume_rftrack.utils.save_particles("initial_particles.npy", bunch)
 
     volume = build_beamline()
-    autophase(volume)
+    autophase(volume, bunch)
     lume_rftrack.utils.apply_space_charge(volume, SETTINGS.space_charge)
 
-    model = lume_rftrack.model.build_model(volume, bunch)
-    model.reset()
+    simulator = lume_rftrack.simulator.RFTrackSimulator(volume, bunch)
+    simulator.track()
     lume_rftrack.utils.save_particles(
-        "final_particles.npy", model.simulator.tracked_bunch
+        "final_particles.npy", simulator.tracked_bunch
     )
-    lume_rftrack.utils.save_stats(model.simulator.beamline, "stats.npy")
-    lume_rftrack.utils.save_screens(model.simulator.beamline, bunch, "screen-{}.npy")
-    lume_rftrack.utils.save_bpms(model.simulator.beamline, "bpms.npy")
+    lume_rftrack.utils.save_stats(simulator.beamline, "stats.npy")
+    lume_rftrack.utils.save_screens(simulator.beamline, bunch, "screen-{}.npy")
+    lume_rftrack.utils.save_bpms(simulator.beamline, "bpms.npy")
 
 
-def _cavity(name, file, peak_v_per_m):
-    """A 1.3 GHz standing-wave cavity from `file`'s on-axis Ez, rescaled
-    to `peak_v_per_m`."""
-    field, step, length = lume_rftrack.utils.load_field_map(
-        PKDict(file=_LIB_DIR / file, rescale_mode="peak", target_field=peak_v_per_m)
-    )
-    return _named(name, rft.RF_FieldMap_1d(field, step, length, 1.3e9, +1))
+def _build_element(spec):
+    if spec.kind == "drift":
+        e = rft.Drift(spec.l)
+    elif spec.kind == "quadrupole_k1":
+        # K1 [1/m^2] against the bunch's P/Q, as Elegant defines it; the
+        # constructor's own strength argument is K1 * L * P/Q [MeV/m]
+        e = rft.Quadrupole(spec.l, math.nan, 0.0)
+        e.set_K1(spec.k1, BUNCH.pc_mev / BUNCH.charge)
+    elif spec.kind == "quadrupole_gradient":
+        e = rft.Quadrupole(spec.l, math.nan, 0.0)
+        e.set_gradient(spec.gradient)
+    elif spec.kind == "sextupole_k2":
+        # k2 [1/m^3] against the bunch's P/Q, as MAD-X defines it
+        e = rft.Sextupole(spec.l)
+        e.set_K2(BUNCH.pc_mev / BUNCH.charge, spec.k2)
+    elif spec.kind == "sextupole_gradient":
+        e = rft.Sextupole(spec.l)
+        e.set_gradient(spec.gradient)
+    elif spec.kind == "rbend":
+        e = rft.RBend(spec.l, spec.angle, BUNCH.pc_mev / BUNCH.charge)
+    elif spec.kind == "sbend":
+        e = rft.SBend(
+            spec.l, spec.angle, BUNCH.pc_mev / BUNCH.charge, spec.e1, spec.e2, spec.k1
+        )
+        e.set_hgap(spec.hgap)
+        e.set_fint(spec.fint)
+    elif spec.kind == "solenoid_analytic":
+        e = rft.Solenoid(spec.l, spec.b_field, spec.radius)
+    elif spec.kind == "solenoid_fieldmap":
+        field, step, _ = lume_rftrack.utils.load_field_map(spec)
+        # the _CINT classes interpolate the map cubically, the others linearly
+        e = (
+            rft.Static_Magnetic_FieldMap_1d_CINT
+            if spec.cubic
+            else rft.Static_Magnetic_FieldMap_1d
+        )(field, step)
+    elif spec.kind == "coil":
+        e = rft.Coil(spec.l, spec.b_field, spec.radius)
+    elif spec.kind == "corrector":
+        e = rft.Corrector(spec.l, spec.h_kick, spec.v_kick)
+    elif spec.kind == "cavity_analytic":
+        # A standing-wave pi-mode structure of half-wavelength cells,
+        # Ez = gradient * cos(n_cells * pi * z / l) on axis, as a field map
+        # so RF-Track derives the off-axis fields from it. Pillbox_Cavity
+        # can't model it: its field repeats unchanged in every cell, and
+        # its off-axis fields for any mode but the first are inconsistent
+        # with Maxwell's equations (B in phase with E). 40 points per cell
+        # gives the energy gain to 0.05%.
+        n_cells = max(1, round(2.0 * spec.l * spec.frequency_hz / rft.clight))
+        l = n_cells * rft.clight / (2.0 * spec.frequency_hz)
+        z = numpy.linspace(0.0, l, 40 * n_cells + 1)
+        e = rft.RF_FieldMap_1d(
+            (spec.gradient_v_per_m * numpy.cos(n_cells * numpy.pi * z / l)).astype(complex),
+            z[1] - z[0],
+            l,
+            spec.frequency_hz,
+            +1,
+        )
+        e.set_phid(spec.phase_deg)
+    elif spec.kind == "cavity_fieldmap":
+        field, step, length = lume_rftrack.utils.load_field_map(spec)
+        e = (rft.RF_FieldMap_1d_CINT if spec.cubic else rft.RF_FieldMap_1d)(
+            field, step, length, spec.frequency_hz, +1
+        )
+        e.set_phid(spec.phase_deg)
+    elif spec.kind == "cavity_fieldmap_2d":
+        Er, Ez, hr, hz = lume_rftrack.utils.load_field_map_2d(spec)
+        e = (rft.RF_FieldMap_2d_CINT if spec.cubic else rft.RF_FieldMap_2d)(
+            Er, Ez, 0, 0, hr, hz, -1, spec.frequency_hz, +1
+        )
+        e.set_phid(spec.phase_deg)
+    elif spec.kind == "screen":
+        e = rft.Screen()
+        # 0 is unlimited, RF-Track's default
+        if spec.width > 0:
+            e.set_width(spec.width)
+        if spec.height > 0:
+            e.set_height(spec.height)
+    elif spec.kind == "bpm":
+        e = rft.Bpm(spec.l)
+        e.set_resolution(spec.resolution)
+    else:
+        raise AssertionError(f"unsupported element kind={spec.kind}")
+    e.set_name(spec.name)
+    if spec.aperture_shape != "none":
+        e.set_aperture(spec.aperture_x, spec.aperture_y, spec.aperture_shape)
+    return e
 
 
-def _named(name, element):
-    element.set_name(name)
-    return element
-
-
-def _solenoid(name, file, scaling_factor):
-    """A solenoid from `file`'s on-axis Bz, as read, scaled by RF-Track's
-    own `scaling_factor` -- settable live, unlike rescaling the map."""
-    field, step, _ = lume_rftrack.utils.load_field_map(
-        PKDict(file=_LIB_DIR / file, rescale_mode="factor", scale_factor=1.0)
-    )
-    e = rft.Static_Magnetic_FieldMap_1d(field, step)
-    e.set_scaling_factor(scaling_factor)
-    return _named(name, e)
-
-
-# Last, and not under "if __name__ == '__main__'": twin/zone_model.py execs
-# this file without this line, so it can build the beamline and bunch
-# without running the simulation.
 main()

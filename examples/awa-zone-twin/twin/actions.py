@@ -1,10 +1,11 @@
 """Action-variable implementations for the AWA zone twin's own extra PVs
 -- the ones `lume_rftrack.model.build_model()` doesn't make: zone1's
-solenoids' `scaling_factor` (an RF-Track attribute `build_model()` has no
-default for), zone2's quadrupoles' normalized K1 (a conversion of
-RF-Track's gradient with the beam's rigidity), and each zone's charge/
-energy/energy-spread diagnostics and screen images (derived from the
-tracked bunch, not a single element attribute at all).
+solenoids' coil currents (RF-Track's live `scaling_factor` of the field
+map, which `build_model()` has no default for), zone2's quadrupoles'
+normalized K1 (a conversion of RF-Track's gradient with the beam's
+rigidity), and each zone's diagnostics (zone1's charge, energy and energy
+spread; zone2's charge, rms sizes and emittances) and screen images
+(derived from the tracked bunch, not a single element attribute at all).
 
 `lume_rftrack.actions`'s own action classes
 (`RFTrackWritableScalarVariable` etc.) are the generic layer; these are
@@ -25,9 +26,40 @@ import lume_rftrack.actions
 import lume_rftrack.model
 import lume_rftrack.units
 
+# A field-map solenoid's field map is in gauss, at its reference current:
+# `scaling_factor` = current / reference current * GAUSS_TO_TESLA.
+GAUSS_TO_TESLA = 1e-4
+
+# Each zone1 solenoid's reference current [A], the one its field map is
+# named for (AWA's awa-rftrack-lattices `ZONE1_ELEMENTS`)
+SOLENOID_REF_A = {
+    "SolBF": 550.0,
+    "SolL1": 500.0,
+    "SolL2": 500.0,
+    "SolL4": 500.0,
+    "SolM": 440.0,
+}
+
 # Resolution of a screen's served image (AWA's zones have no modeled
 # camera, so this is just a reasonable display resolution).
 IMAGE_BINS = 64
+
+
+class BeamInfoVariable(ScalarVariable, ReadOnlyActionMixin):
+    """One field of a zone's tracked bunch's `get_info()` (e.g. `sigma_x`
+    [mm], `emitt_x` [normalized, mm.mrad]), NaN before there's a bunch to
+    measure.
+    """
+
+    # the `get_info()` field
+    attribute: str
+    label: str
+
+    def _get(self, simulator):
+        bunch = simulator.tracked_bunch
+        if bunch is None:
+            return math.nan
+        return getattr(bunch.get_info(), self.attribute)
 
 
 class ChargePcVariable(ScalarVariable, ReadOnlyActionMixin):
@@ -112,9 +144,58 @@ class ScreenImageVariable(NDVariable, ReadOnlyActionMixin):
         )
 
 
-def diagnostic_variables(prefix):
-    """A zone's diagnostics, `<prefix>charge_pC`, `<prefix>energy_MeV` and
-    `<prefix>energy_spread_pct`, by name. Each has a display `label`."""
+class SolenoidCurrentVariable(ScalarVariable, WritableActionMixin):
+    """A field-map solenoid's coil current [A], against the field map's
+    reference current `ref_a` [A]: RF-Track's live `scaling_factor` of the
+    field is `current / ref_a * GAUSS_TO_TESLA`. The sim carries no other
+    current-to-field calibration.
+    """
+
+    element_name: str
+    ref_a: float
+
+    def _get(self, simulator):
+        return _current(simulator.find_element(self.element_name), self.ref_a)
+
+    def _set(self, simulator, value):
+        simulator.find_element(self.element_name).set_scaling_factor(
+            value / self.ref_a * GAUSS_TO_TESLA
+        )
+
+
+def beam_diagnostic_variables(prefix):
+    """A magnetic-transport zone's diagnostics (its energy is fixed by its
+    input bunch): `<prefix>charge_pC`, the rms sizes `<prefix>sigma_x_mm`/
+    `<prefix>sigma_y_mm` and the normalized emittances
+    `<prefix>emitt_x`/`<prefix>emitt_y`, by name. Each has a display
+    `label`."""
+    return {
+        v.name: v
+        for v in (
+            ChargePcVariable(name=f"{prefix}charge_pC", read_only=True, unit="pC"),
+            *(
+                BeamInfoVariable(
+                    name=f"{prefix}{a}{u}",
+                    attribute=a,
+                    label=f"{lbl} {a[-1]}",
+                    read_only=True,
+                    unit=un,
+                )
+                for lbl, a, u, un in (
+                    ("RMS size", "sigma_x", "_mm", "mm"),
+                    ("RMS size", "sigma_y", "_mm", "mm"),
+                    ("Norm. emittance", "emitt_x", "", "mm.mrad"),
+                    ("Norm. emittance", "emitt_y", "", "mm.mrad"),
+                )
+            ),
+        )
+    }
+
+
+def energy_diagnostic_variables(prefix):
+    """An accelerating zone's diagnostics, `<prefix>charge_pC`,
+    `<prefix>energy_MeV` and `<prefix>energy_spread_pct`, by name. Each has
+    a display `label`."""
     return {
         v.name: v
         for v in (
@@ -144,22 +225,6 @@ def quadrupole_k1_variables(simulator, p_over_q):
     ]
 
 
-def scaling_factor_variables(simulator):
-    """One `<name>_scaling_factor` variable per named
-    `Static_Magnetic_FieldMap_1d` (a field-map solenoid) in `simulator`'s
-    beamline: RF-Track's own live scale of its field."""
-    return [
-        lume_rftrack.actions.RFTrackWritableScalarVariable(
-            name=lume_rftrack.model.variable_name(e.get_name(), "scaling_factor"),
-            element_name=e.get_name(),
-            attribute="scaling_factor",
-            default_value=e.get_scaling_factor(),
-            unit=lume_rftrack.units.unit(type(e), "scaling_factor"),
-        )
-        for e in _named_elements(simulator, rft.Static_Magnetic_FieldMap_1d)
-    ]
-
-
 def screen_image_variables(screen_names, fov_mm):
     """One `<name>_image` variable per screen in `screen_names` (the
     beamline's screens, in order), `fov_mm[name]` [mm] across."""
@@ -174,6 +239,27 @@ def screen_image_variables(screen_names, fov_mm):
         )
         for i, n in enumerate(screen_names)
     }
+
+
+def solenoid_current_variables(simulator):
+    """One `<name>_current` variable [A] per named
+    `Static_Magnetic_FieldMap_1d` (a field-map solenoid) in `simulator`'s
+    beamline, in `SOLENOID_REF_A`."""
+    return [
+        SolenoidCurrentVariable(
+            name=lume_rftrack.model.variable_name(e.get_name(), "current"),
+            element_name=e.get_name(),
+            ref_a=SOLENOID_REF_A[e.get_name()],
+            default_value=_current(e, SOLENOID_REF_A[e.get_name()]),
+            unit="A",
+        )
+        for e in _named_elements(simulator, rft.Static_Magnetic_FieldMap_1d)
+    ]
+
+
+def _current(element, ref_a):
+    """`element`'s coil current [A] at its field map's reference `ref_a`."""
+    return element.get_scaling_factor() * ref_a / GAUSS_TO_TESLA
 
 
 def _histogram(bunch, size_mm):

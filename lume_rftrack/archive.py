@@ -26,6 +26,7 @@ loaded simulator has its final particles without tracking again.
 
 import contextlib
 import importlib.metadata
+import warnings
 
 import beamphysics
 import h5py
@@ -92,7 +93,11 @@ def archive(simulator, path, autophase=None, space_charge=None):
     element keeps its phase correction, so a reloaded beamline tracks
     identically without calling `autophase()` again. Space charge is
     recorded as settings only: after loading, call
-    `RFTrackSimulator.apply_space_charge()` to use it.
+    `RFTrackSimulator.apply_space_charge()` to use it. Collective effects
+    (e.g. a `ShortRangeWakefield`), on an element or the beamline, are
+    not archived: RF-Track has no getters for their parameters, so they
+    are dropped with a `UserWarning`, and a reloaded beamline tracks
+    without them.
 
     Args:
         simulator (RFTrackSimulator): the `Lattice` or `Volume` and the
@@ -141,11 +146,18 @@ def archive(simulator, path, autophase=None, space_charge=None):
 
     kind = type(simulator.beamline).__name__
     elements = []
+    dropped = _collective_effects(simulator.beamline, kind)
     for i in range(simulator.beamline.size()):
         e = simulator.beamline[i]
         d = _element_to_attrs(rft, e, kind)
         _assert_restorable(rft, e, d)
         elements.append(d)
+        dropped += _collective_effects(e, f"element {i} {d.name!r}")
+    if dropped:
+        warnings.warn(
+            "collective effects are not archived, dropped: " + "; ".join(dropped),
+            stacklevel=3,
+        )
     elements, field_maps = _dedupe_field_maps(elements)
     particle_group, bunch_type = _bunch_to_particlegroup(simulator.initial_bunch)
     tracked = (
@@ -221,6 +233,15 @@ def archive(simulator, path, autophase=None, space_charge=None):
             o.attrs["bunch_type"] = tracked[1]
             _write_bunch_time(o, simulator.tracked_bunch)
             tracked[0].write(o.create_group("particles"))
+
+
+def constructor_class(class_name):
+    """The class whose constructor arguments `class_name` archives with,
+    e.g. "RF_FieldMap_1d" for "RF_FieldMap_1d_CINT", which takes the same
+    arguments and differs only in interpolating cubically; otherwise
+    `class_name` itself.
+    """
+    return _SAME_CONSTRUCTOR.get(class_name, class_name)
 
 
 def load_archive(simulator, path):
@@ -390,7 +411,7 @@ def _assert_restorable(rft, e, d):
         raise NotImplementedError(
             f"a {d['class']!r} element rebuilt from its attributes has a"
             + " different field; archiving it needs a"
-            + f" _constructor_args_{_constructor_class(d['class']).lower()}()"
+            + f" _constructor_args_{constructor_class(d['class']).lower()}()"
         )
 
 
@@ -438,6 +459,16 @@ def _bunch_time_attr(group):
     return float(group.attrs["bunch_t_mm"]) if "bunch_t_mm" in group.attrs else None
 
 
+def _collective_effects(e, label):
+    """`e`'s collective effects, as `["<label>: <class>"]`. RF-Track's
+    `get_collective_effects()` returns `[]`, a single effect, or a list
+    of them."""
+    c = e.get_collective_effects()
+    if not isinstance(c, list):
+        c = [c]
+    return [f"{label}: {type(x).__name__}" for x in c]
+
+
 def _construct(rft, d):
     """`d`'s class, built from its `constructor` arguments if it has
     them, else with none."""
@@ -452,7 +483,7 @@ def _construct(rft, d):
         # defined" (an abstract class)
         raise NotImplementedError(
             f"can't build a {d['class']!r} element; archiving it needs a"
-            + f" _constructor_args_{_constructor_class(d['class']).lower()}()"
+            + f" _constructor_args_{constructor_class(d['class']).lower()}()"
         ) from e
 
 
@@ -471,9 +502,9 @@ def _constructor_args_pillbox_cavity(e):
 
 
 def _constructor_args_rf_fieldmap_1d(e):
-    # get_Ez() is the exact array the field map file was loaded into --
-    # confirmed empirically this round-trips a reconstructed element's
-    # get_field() output exactly (max diff 0.0) against the original.
+    # get_Ez() is the exact array the field map file was loaded into, so a
+    # reconstructed element's get_field() output matches the original's
+    # exactly.
     return _getters(e, "Ez", "hz", "length", "frequency", "direction")
 
 
@@ -481,8 +512,8 @@ def _constructor_args_rf_fieldmap_2d(e):
     # Unlike RF_FieldMap_1d's get_Ez(), there's no direct 2D array getter,
     # so this samples get_field_complex(x, y, z, t) point by point over
     # the full (nz, nr) grid -- cylindrical symmetry means Er is just the
-    # Cartesian Ex component at (x=r, y=0) (confirmed empirically: sampling
-    # at (x=0, y=r) instead shows the identical value in Ey, not Ex). The
+    # Cartesian Ex component at (x=r, y=0) (sampling at (x=0, y=r) gives the
+    # same value in Ey, not Ex). The
     # magnetic field is derived from the electric (Bt and Bz 0); a map
     # with its own would fail `_assert_restorable()`.
     hr = e.get_hr()
@@ -537,11 +568,9 @@ def _constructor_args_static_magnetic_fieldmap_1d(e):
     # RF_FieldMap_1d's get_Ez()), so this samples get_field() along the
     # element's own z range instead. get_field(x, y, z, t)'s coordinate
     # arguments are documented (RF-Track reference manual, section 5.1.2)
-    # as millimeters, not meters like get_length()/get_z0()/get_z1() --
-    # confirmed empirically: sampling with z in mm reproduces a real
-    # solenoid field map's documented peak field exactly, matching its
-    # source field-map file; the returned B itself is already in Tesla,
-    # no further scaling needed.
+    # as millimeters, not meters like get_length()/get_z0()/get_z1(). Sampling
+    # with z in mm reproduces a real solenoid field map's peak field exactly;
+    # the returned B itself is already in Tesla, no further scaling needed.
     z = numpy.linspace(e.get_z0(), e.get_z1(), int(e.get_nz())) * 1000.0
     with _unscaled(e):
         _, b = e.get_field(0.0, 0.0, z, 0.0)
@@ -563,17 +592,12 @@ def _constructor_args_static_magnetic_fieldmap_2d(e):
     return PKDict(Br=br, Bz=bz, hr=hr, hz=e.get_hz())
 
 
-def _constructor_class(class_name):
-    """The class whose constructor functions `class_name` uses."""
-    return _SAME_CONSTRUCTOR.get(class_name, class_name)
-
-
 def _constructor_function(class_name):
     """This module's `_constructor_args_<class>` function for
     `class_name`, or `None`."""
     return getattr(
         pykern.pkinspect.this_module(),
-        "_constructor_args_" + _constructor_class(class_name).lower(),
+        "_constructor_args_" + constructor_class(class_name).lower(),
         None,
     )
 
@@ -627,6 +651,8 @@ def _element_from_attrs(rft, d):
 def _element_to_attrs(rft, e, beamline_class="Lattice"):
     cls = type(e).__name__
     d = PKDict(name=e.get_name(), attributes=_attributes(e))
+    if isinstance(e, rft.SBend):
+        d.attributes.fint = _fint(rft, e)
     d["class"] = cls
     f = _constructor_function(cls)
     if f is not None:
@@ -641,19 +667,56 @@ def _element_to_attrs(rft, e, beamline_class="Lattice"):
         d.update(_position_to_attrs(e))
     # Only RF fields and Screen have t0_is_set()/get_t0() at all.
     # get_phid() alone never reflects autophase(): it always reads back
-    # the phid the element was constructed with (confirmed empirically:
-    # get_phid() stays unchanged across autophase()) -- t0 is the actual
-    # correction autophase() applies and .track() uses as-is. Archiving
-    # it directly (confirmed empirically: a fresh beamline with set_t0()
-    # from these captured values, autophase() never called again,
-    # reproduces the autophased beamline's own tracked mean kinetic
-    # energy exactly) means load_archive() reproduces the real physics
-    # regardless of whether the caller re-runs autophase() or even knows
-    # it was ever used, rather than depending on that recomputation
-    # happening to be reproducible.
+    # the phid the element was constructed with. t0 is the actual
+    # correction autophase() applies and .track() uses as-is, so archiving
+    # it directly lets load_archive() reproduce the autophased physics
+    # exactly (a fresh beamline with these set_t0() values tracks to the same
+    # mean kinetic energy), whether or not the caller re-runs autophase().
     if hasattr(e, "t0_is_set") and e.t0_is_set():
         d.t0 = e.get_t0()
     return d
+
+
+def _fint(rft, e):
+    """`e`'s (an SBend's) fringe field integral, which has a setter but no
+    getter, measured instead: in a Lattice, the vertical edge focusing
+    depends on `hgap * fint`, so a particle off axis in y leaves a clone
+    of `e` (which keeps its fint) with a y' that rises smoothly with the
+    clone's fint, solved for by the secant method. With `hgap` 0, fint
+    has no effect, and 0 is returned. A Volume ignores fint: its 3D
+    fringe field depends on `hgap` alone.
+    """
+    if e.get_hgap() == 0:
+        return 0.0
+    p = e.get_P_over_Q()
+
+    def _yp(fint=None):
+        c = e.clone()
+        if fint is not None:
+            c.set_fint(fint)
+        lattice = rft.Lattice()
+        lattice.append(c)
+        # 1 um, so a small aperture doesn't stop it
+        return lattice.track(
+            rft.Bunch6d(
+                rft.electronmass,
+                1.0,
+                numpy.sign(p),
+                numpy.array([0.0, 0.0, 1e-3, 0.0, 0.0, abs(p)]),
+            )
+        ).get_phase_space("%yp")[0, 0]
+
+    target = _yp()
+    f0, f1 = 0.0, 1.0
+    y0, y1 = _yp(f0), _yp(f1)
+    for _ in range(20):
+        if y1 == y0:
+            break
+        f0, f1 = f1, f1 - (y1 - target) * (f1 - f0) / (y1 - y0)
+        y0, y1 = y1, _yp(f1)
+        if abs(f1 - f0) <= 1e-12 * max(1.0, abs(f1)):
+            break
+    return f1
 
 
 def _getters(e, *names):
@@ -708,8 +771,8 @@ def _position_to_attrs(e):
         raise NotImplementedError(
             "archiving a Volume element with a non-identity rotation isn't supported yet"
         )
-    # Frame.get_origin() is in mm, confirmed empirically (e.g. a screen
-    # added at z=0.3 m reads back as origin z=300) -- but Volume.add()'s
+    # Frame.get_origin() is in mm (e.g. a screen added at z=0.3 m reads back
+    # as origin z=300), but Volume.add()'s
     # own x/y/z args are in meters, same as every other RF-Track setter in
     # this module, so this must convert back.
     return PKDict(x=origin[0] / 1000.0, y=origin[1] / 1000.0, z=origin[2] / 1000.0)
@@ -787,11 +850,12 @@ def _set_attribute(e, class_name, name, value):
 
 @contextlib.contextmanager
 def _unscaled(e):
-    """`e` with no phase offset (`phid`), power scaling (`P_actual`) or
-    `scaling_factor` while sampling its field: those are restored by
-    their setters, so a sampled field map must not include them already
-    (confirmed empirically for phid: sampling with it set, then setting
-    it again, double-applies the rotation).
+    """`e` with no phase offset (`phid`), power scaling (`P_actual`),
+    `scaling_factor` or synchronization time (`t0`) while sampling its
+    field: those are restored by their setters, so a sampled field map
+    must not include them already (for phid: sampling with it set, then
+    setting it again, double-applies the rotation; likewise for an
+    autophased element's t0, which an unset t0 samples like).
     """
     s = PKDict(
         {
@@ -800,12 +864,16 @@ def _unscaled(e):
             if hasattr(e, "get_" + a)
         }
     )
+    if hasattr(e, "t0_is_set") and e.t0_is_set():
+        s.t0 = e.get_t0()
     if "phid" in s:
         e.set_phid(0.0)
     if "P_actual" in s:
         e.set_P_actual(e.get_P_map())
     if "scaling_factor" in s:
         e.set_scaling_factor(1.0)
+    if "t0" in s:
+        e.unset_t0()
     try:
         yield
     finally:

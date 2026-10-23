@@ -51,7 +51,10 @@ lattice = rft.Lattice()
 lattice.append(quad)
 lattice.append(drift)
 
-# 2) Create an initial bunch: 1000 electrons at 100 MeV/c
+# 2) Create an initial bunch: 1000 macroparticles of electrons at 100 MeV/c.
+#    Bunch6d(mass [MeV/c^2], population, charge [e], phase space), where the
+#    population is the number of real particles (1e9 here) and each phase
+#    space row is x [mm], px [MeV/c], y [mm], py [MeV/c], t [mm/c], P [MeV/c]
 rng = numpy.random.default_rng(1)
 phase_space = numpy.zeros((1000, 6))
 phase_space[:, [0, 2]] = rng.normal(0, 0.5, (1000, 2))  # x, y [mm]
@@ -62,7 +65,14 @@ bunch = rft.Bunch6d(rft.electronmass, 1e9, -1, phase_space)
 #    element attribute, named <element>_<attribute>
 model = lume_rftrack.model.build_model(lattice, bunch)
 
-# 4) Use the model API: every set() re-tracks the beamline
+# 4) Track once at the initial settings: `tracked_bunch` is None until the
+#    first reset() or set()
+model.reset()
+print(model.get(["Q1_gradient"]))
+print(model.simulator.tracked_bunch.get_phase_space("%x").std(), "mm")
+
+# 5) Use the model API: every set() re-tracks the beamline, here with a
+#    stronger quadrupole
 model.set({"Q1_gradient": 8.0})
 print(model.get(["Q1_gradient"]))
 print(model.simulator.tracked_bunch.get_phase_space("%x").std(), "mm")
@@ -87,6 +97,8 @@ with no bunch:
 ```python
 from lume.staged_model import StagedModel
 
+# `linac` and `chicane` are RF-Track beamlines and `bunch` an initial bunch,
+# built as above
 chain = StagedModel(
     [
         lume_rftrack.model.build_model(linac, bunch),
@@ -114,16 +126,25 @@ Two complete examples are in `examples/`:
 
 ## Archives
 
-`RFTrackSimulator.archive()` writes the beamline, the initial bunch (as openPMD particles), the field maps (deduplicated) and the units to an HDF5 file, and `load_archive()` restores them. Like lume-impact's and lume-genesis' archives, it also holds the last run's output: if the simulator has tracked, an `output` group with the tracked bunch, which `load_archive()` restores as `tracked_bunch`, so a loaded model's `final_particles` needs no re-track. The file records the RF-Track and lume-rftrack versions that wrote it, which `lume_rftrack.archive.read_archive()` returns.
+`RFTrackSimulator.archive(path)` writes the beamline, the initial bunch (as
+openPMD particles), the field maps and the units to an HDF5 file, plus the
+tracked bunch if the simulator has tracked. `load_archive(path)` restores
+them, so a loaded model has its `final_particles` without re-tracking. The
+file is plain HDF5, readable without RF-Track through
+`lume_rftrack.archive.read_archive()`.
 
-An element is archived as RF-Track exposes it: its class and every `get_X()`/`set_X()` pair, under RF-Track's own names, so any element class that can be built without arguments and set that way needs no code here. A class with state only its constructor takes (field maps, `Pillbox_Cavity`, `SBend`, `Solenoid`, `Coil`) also records its constructor arguments. `archive()` rebuilds each element and compares its field with the original's, and raises `NotImplementedError` for one it can't reproduce (e.g. a thick-winding `Solenoid`, or an `Absorber`) rather than archive it wrong.
+An element is archived through its RF-Track getters and setters, so most
+classes need no special code. `archive()` rebuilds each element and compares
+its field with the original's, and raises `NotImplementedError` for one it
+can't reproduce rather than archive it wrong. See `lume_rftrack/archive.py`
+for the format and its limits.
 
 ## Development
 
 ```
 pip install -e .
+pre-commit install  # run the lint and format checks on every commit
 pykern test tests
-pre-commit run --all-files
 ```
 
-The version comes from the git tag through `setuptools_scm`.
+`pre-commit run --all-files` checks the whole tree.

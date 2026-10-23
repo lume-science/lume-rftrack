@@ -78,7 +78,7 @@ def test_versions():
     a = read_archive(path)
     pkunit.pkeq(rft.RF_TRACK_VERSION, a.rftrack_version)
     pkunit.pkeq(importlib.metadata.version("lume-rftrack"), a.lume_rftrack_version)
-    # an archive from before the versions were recorded
+    # an archive without the version attrs
     with h5py.File(path, "a") as f:
         del f.attrs["rftrack_version"]
         del f.attrs["lume_rftrack_version"]

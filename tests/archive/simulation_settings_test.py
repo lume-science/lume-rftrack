@@ -1,7 +1,6 @@
 """RFTrackSimulator.archive()/load_archive() can carry simulation-level
 settings (autophase, space charge) that have no live equivalent at all
-in RF-Track's own API to read back (confirmed empirically:
-rft.cvar.SC_engine's getter is completely type-erased, and dir(rft.cvar)
+in RF-Track's own API to read back (rft.cvar.SC_engine's getter is completely type-erased, and dir(rft.cvar)
 itself returns [] -- there's no way to discover or identify any
 process-global setting from Python). archive()/load_archive() never act
 on these themselves; they're purely informational for the caller.

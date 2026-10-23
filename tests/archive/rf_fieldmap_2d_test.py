@@ -106,3 +106,45 @@ def test_archive_round_trip():
         atol=1e-6,
         err_msg="reloaded cavity field differs",
     )
+
+
+def test_autophased_round_trip():
+    """An autophased cavity's t0 isn't sampled into its map, which would
+    apply it twice"""
+    import numpy
+    import RF_Track as rft
+    import rftrack_util
+    from pykern import pkunit
+
+    from lume_rftrack.simulator import RFTrackSimulator
+
+    path = str(pkunit.empty_work_dir().join("cavity2d.h5"))
+    cav = _build_cavity(rft, numpy)
+    cav.set_P_actual(4.0)
+    beamline = rft.Lattice()
+    beamline.append(rft.Drift(0.1))
+    beamline.append(cav)
+    beamline.autophase(
+        rft.Bunch6d(rft.electronmass, 0.0, -1.0, numpy.array([0, 0, 0, 0, 0, 100.0]))
+    )
+    # append() copies cav
+    pkunit.pkok(beamline[1].t0_is_set(), "autophase() didn't set t0")
+    original = RFTrackSimulator(beamline, rftrack_util.twiss_bunch(rft, 100.0, 30))
+    original.archive(path)
+    reloaded = RFTrackSimulator()
+    reloaded.load_archive(path)
+    z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
+    numpy.testing.assert_allclose(
+        reloaded.beamline[1].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        beamline[1].get_field(1.0, 0.0, z_mm, 0.0)[0],
+        rtol=0,
+        atol=1e-6,
+    )
+    original.track()
+    reloaded.track()
+    numpy.testing.assert_allclose(
+        reloaded.tracked_bunch.get_phase_space("%x %xp %y %yp %t %P"),
+        original.tracked_bunch.get_phase_space("%x %xp %y %yp %t %P"),
+        rtol=1e-8,
+        atol=1e-8,
+    )

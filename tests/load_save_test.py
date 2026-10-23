@@ -41,6 +41,33 @@ def test_load_field_map_2d():
     numpy.testing.assert_allclose(er[1, 0], 100.0e6)
 
 
+def test_load_field_map_2d_written():
+    """write_field_map_2d() is the inverse of load_field_map_2d(), and the
+    map it writes builds an RF_FieldMap_2d with the same field."""
+    import numpy
+    import RF_Track as rft
+    from pykern import pkunit
+
+    from lume_rftrack.utils import load_field_map_2d, write_field_map_2d
+
+    nz, nr, hz, hr = 21, 5, 0.005, 0.002
+    z = numpy.arange(nz) * hz
+    r = numpy.arange(nr) * hr
+    ez = numpy.outer(20e6 * numpy.sin(numpy.pi * z / z[-1]), numpy.ones(nr))
+    er = numpy.outer(1e6 * numpy.cos(numpy.pi * z / z[-1]), r / r[-1])
+    f = str(pkunit.empty_work_dir().join("map2d.txt"))
+    write_field_map_2d(f, er, ez, hr, hz)
+    a = load_field_map_2d(dict(file=f))
+    for e, x in zip((er, ez, hr, hz), a):
+        numpy.testing.assert_allclose(x, e, rtol=1e-12)
+    p = (1.0, 0.5, 40.0, 0.0)
+    numpy.testing.assert_allclose(
+        rft.RF_FieldMap_2d(*a[:2], 0, 0, *a[2:], -1, 3e9, +1).get_field(*p)[0],
+        rft.RF_FieldMap_2d(er, ez, 0, 0, hr, hz, -1, 3e9, +1).get_field(*p)[0],
+        rtol=1e-12,
+    )
+
+
 def test_save_particles():
     import numpy
     import RF_Track as rft

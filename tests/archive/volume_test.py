@@ -8,9 +8,8 @@ corrector_test.py).
 
 The cavity is archived two ways. Before track() it keeps its construction
 phid and Volume.track() autophases the copy, the same way for both. After
-autophase() it has a t0, which get_phid() never reflects (confirmed
-empirically: it always reads back the phid the element was constructed
-with), so t0 is the only way its actual effective phase survives the
+autophase() it has a t0, which get_phid() never reflects (it always
+reads back the phid the element was constructed with), so t0 is the only way its actual effective phase survives the
 round trip.
 """
 
@@ -25,9 +24,7 @@ def test_t0_archive_round_trip():
     path = str(pkunit.empty_work_dir().join("archive.h5"))
     volume = rftrack_util.volume_with_cavity(rft)
     cavity = volume[0]
-    # autophase for the bunch itself, as Volume.track() does: a single
-    # electron-like reference particle built by hand was autophased to a
-    # decelerating phase here
+    # autophase for the bunch itself, as Volume.track() does
     bunch = rftrack_util.twiss_bunch(rft, 10.0, 200)
     volume.unset_t0()
     volume.autophase(bunch)

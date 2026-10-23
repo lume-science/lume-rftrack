@@ -3,23 +3,23 @@ through `lume-pva`.
 
 `python serve.py [--prefix AWA:SIM:]` builds the chain (`build_chain()`)
 and serves every variable of both zones: zone1's and zone2's writable
-params (solenoid scale factors, cavity power/phase, quadrupole strengths,
-corrector kicks) read-write, and each zone's read-only
-diagnostics (`zone{1,2}_charge_pC`, `zone{1,2}_energy_MeV`,
-`zone{1,2}_energy_spread_pct`). `lume-pva` adds `<prefix>STATUS`,
-`<prefix>RESET` and `<prefix>SNAPSHOT` on top of the model's own variables.
+params (solenoid currents, cavity power/phase, quadrupole strengths,
+corrector kicks) read-write, and each zone's read-only diagnostics
+(zone1's `charge_pC`, `energy_MeV` and `energy_spread_pct`; zone2's
+`charge_pC`, `sigma_x_mm`, `sigma_y_mm`, `emitt_x` and `emitt_y`).
+`lume-pva` adds `<prefix>STATUS`, `<prefix>RESET` and `<prefix>SNAPSHOT`
+on top of the model's own variables.
 
-Both zones are meant to be driven interactively, not served as a fixed,
-previously-recorded source.
+Both zones are driven interactively: each put re-tracks the chain.
 
 A put is acknowledged at once, before the model has finished tracking:
 Phoebus waits one second for a put reply on its UI thread, and a zone1
 change (field-map I/O, autophase, and a space-charge-tracked run) takes
 tens of seconds at the default particle count -- far longer than that.
 
-Needs `lume-pva` (already installed in this environment; not a declared
-dependency of `lume_rftrack` itself). Run it from this
-directory or by path; it imports the `zone_model.py` next to it.
+Needs `lume-pva`, which is not a declared dependency of `lume_rftrack`
+itself. Run it from this directory or by path; it imports the
+`zone_model.py` next to it.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> None:
             "--n-particles",
             type=int,
             default=2000,
-            help="macroparticles zone1 tracks (a fresh cathode bunch every set())",
+            help="macroparticles zone1 tracks",
         )
         parser.add_argument(
             "--threads",
