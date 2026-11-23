@@ -17,8 +17,8 @@ Phoebus waits one second for a put reply on its UI thread, and a zone1
 change (field-map I/O, autophase, and a space-charge-tracked run) takes
 tens of seconds at the default particle count -- far longer than that.
 
-Needs `lume-pva`, from `lume_rftrack`'s `twin` extra
-(`pip install 'lume-rftrack[twin]'`). Run it from this directory or by
+Needs `lume-pva`, from `lume_rftrack`'s `twin` extra: in the lume-rftrack
+repository, `pip install -e '.[twin]'`. Run it from this directory or by
 path; it imports the `zone_model.py` next to it.
 """
 
@@ -35,7 +35,8 @@ except ModuleNotFoundError as e:
     if e.name != "lume_pva":
         raise
     raise ModuleNotFoundError(
-        "serve.py needs lume-pva: pip install 'lume-rftrack[twin]'",
+        "serve.py needs lume-pva: pip install -e '.[twin]' in the lume-rftrack"
+        + " repository",
         name="lume_pva",
     ) from e
 

@@ -101,9 +101,18 @@ that happens often for your settings.
 ## Install
 
 Needs `lume_rftrack` (with RF-Track), plus `lume-pva` and a Phoebus 5.x build to
-serve/view. `pip install 'lume-rftrack[twin]'` installs `lume-pva`, pinned to
-0.5.0: later commits serve variable subclasses with the wrong PVA type. No
-other lattice package is needed: the lattices are bundled in `twin/sources/`.
+serve/view. Install `lume_rftrack` from a clone of this repository with its
+`twin` extra, which adds `lume-pva`, pinned to 0.5.0 (later commits serve
+variable subclasses with the wrong PVA type):
+
+```bash
+git clone https://github.com/lume-science/lume-rftrack
+cd lume-rftrack
+pip install -e '.[twin]'
+```
+
+No other lattice package is needed: the lattices are bundled in
+`twin/sources/`.
 
 ## Run the twin
 
