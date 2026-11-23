@@ -44,17 +44,17 @@ def test_rebuild_does_not_double_apply_phid_or_power():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _element_from_attrs, _element_to_attrs
+    from lume_rftrack.archive_elements import from_dict, to_dict
 
     cav = _build_cavity(rft, numpy)
     cav.set_P_actual(4.0)
     expect = (cav.get_phid(), cav.get_P_actual())
-    d = _element_to_attrs(rft, cav)
+    d = to_dict(rft, cav)
 
     # extracting must not mutate the element's own phid or power
     pkunit.pkeq(expect, (cav.get_phid(), cav.get_P_actual()))
 
-    rebuilt = _element_from_attrs(rft, d)
+    rebuilt = from_dict(rft, d)
 
     z_mm = numpy.linspace(0, cav.get_length(), 15) * 1000.0
     for x_mm in (0.0, 1.0, 3.0):

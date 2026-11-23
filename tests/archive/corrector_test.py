@@ -13,9 +13,9 @@ def test_strength_is_archived_directly():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _element_to_attrs
+    from lume_rftrack.archive_elements import to_dict
 
-    d = _element_to_attrs(rft, rft.Corrector(0.1, 2.0, 3.0))
+    d = to_dict(rft, rft.Corrector(0.1, 2.0, 3.0))
     numpy.testing.assert_allclose(d.attributes.strength, [2.0, 3.0], rtol=1e-12)
     pkunit.pkeq(0.1, d.attributes.length)
     pkunit.pkok("kick" not in d.attributes, "get_kick() takes an argument")

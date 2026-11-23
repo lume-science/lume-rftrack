@@ -391,7 +391,8 @@ def _zone1_layout():
     `SETTINGS.tracking_range_m[1]`, not guessed from the last element's
     position -- a Volume's elements aren't necessarily stored in z
     order). Each element is drawn at its *absolute* z position, its
-    Volume placement (`get_offsets()`, in mm).
+    Volume placement (in mm): `get_position()` on RF-Track 2.7.4+, which
+    separated it from the misalignment `get_offsets()` had included.
     """
     layout = []
     for i in range(ZONE1_BEAMLINE.size()):
@@ -399,7 +400,8 @@ def _zone1_layout():
         group = _CLASS_GROUP.get(type(e).__name__)
         if group is None:
             continue
-        z = float(e.get_offsets().get_origin().flatten()[2]) / 1000.0
+        p = e.get_position() if hasattr(e, "get_position") else e.get_offsets()
+        z = float(p.get_origin().flatten()[2]) / 1000.0
         layout.append((z, _width(group, e), group, e.get_name()))
     return layout, float(ZONE1_MODULE.SETTINGS.tracking_range_m[1])
 

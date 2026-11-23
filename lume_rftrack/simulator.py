@@ -38,12 +38,13 @@ class RFTrackSimulator:
         else:
             utils.apply_space_charge(self.beamline, self.space_charge)
 
-    def archive(self, path, autophase=None, space_charge=None):
-        """Write `beamline` and `initial_bunch` to `path` as HDF5."""
+    def archive(self, path, autophase=None, space_charge=None, strict=True):
+        """Write `beamline` and `initial_bunch` to `path` as HDF5 (see
+        `lume_rftrack.archive.archive()`)."""
         from lume_rftrack import archive as archive_module
 
         archive_module.archive(
-            self, path, autophase=autophase, space_charge=space_charge
+            self, path, autophase=autophase, space_charge=space_charge, strict=strict
         )
 
     def find_element(self, name):

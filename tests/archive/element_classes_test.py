@@ -71,7 +71,7 @@ def test_sbend_fint():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack import archive
+    from lume_rftrack import archive_elements
 
     for args, hgap, fint in (
         ((0.3, 0.05, -100.0, 0.01, 0.02), 0.02, 0.5),
@@ -82,7 +82,7 @@ def test_sbend_fint():
         b.set_hgap(hgap)
         b.set_fint(fint)
         b.set_aperture(1e-3, 1e-3, "circular")
-        m = archive._fint(rft, b)
+        m = archive_elements._fint(rft, b)
         pkunit.pkok(abs(m - fint) < 1e-9, "args={} fint={} measured={}", args, fint, m)
 
 
