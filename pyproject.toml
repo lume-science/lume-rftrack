@@ -21,7 +21,7 @@ dependencies = [
     "lume-base",
     "numpy",
     "openpmd-beamphysics>=0.15.1",
-    "RF-Track==2.7.3",
+    "RF-Track>=2.7.3",
     "scipy",
 ]
 description = "RF-Track implementation of LUME model classes for virtual accelerators"

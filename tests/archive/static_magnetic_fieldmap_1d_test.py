@@ -30,7 +30,9 @@ def test_peak_field_matches_construction_input():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _constructor_args_static_magnetic_fieldmap_1d
+    from lume_rftrack.archive_elements import (
+        _constructor_args_static_magnetic_fieldmap_1d,
+    )
 
     sol, bz_in = _build_solenoid(rft, numpy, peak_t=0.3)
     # restored by set_scaling_factor(), so not in the sampled map

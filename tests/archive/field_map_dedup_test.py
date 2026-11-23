@@ -59,7 +59,10 @@ def test_field_map_dedup():
     pkunit.pkeq(3, reloaded.beamline.size())
     for i in range(3):
         pkunit.pkeq(original.beamline[i].get_phid(), reloaded.beamline[i].get_phid())
-        pkunit.pkeq(
-            list(original.beamline[i].get_field(0.0, 0.0, 100.0, 0.0)[0]),
-            list(reloaded.beamline[i].get_field(0.0, 0.0, 100.0, 0.0)[0]),
+        # not exact: RF-Track 2.7.4+ smooths 1D field maps, which archive()
+        # undoes to round-off (see lume_rftrack.archive_elements._unsmoothed())
+        numpy.testing.assert_allclose(
+            reloaded.beamline[i].get_field(0.0, 0.0, 100.0, 0.0)[0],
+            original.beamline[i].get_field(0.0, 0.0, 100.0, 0.0)[0],
+            rtol=1e-12,
         )

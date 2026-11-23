@@ -87,28 +87,40 @@ def test_screen_size():
 
 
 def test_solenoid_focuses():
-    """A weak solenoid focuses toward the axis in both planes at once:
-    the radial angle change is -integral(Bz^2 dz) / (4 B rho^2) times the
-    radius (the azimuthal part, from the field's rotation, drops out of the
-    radial projection)."""
+    """A weak solenoid whose field starts and ends at zero rotates the beam
+    by integral(Bz dz) / (2 B rho) and focuses it in both planes with
+    1/f = integral(Bz^2 dz) / (4 B rho^2): its transfer matrix is that
+    rotation times the focusing (R21 = R43 = -cos(rotation) / f). elegant
+    and MAD-X give the same matrix for this field to 0.5%.
+
+    The Volume's step is set: its default adaptive integrator
+    (`odeint_epsabs` 1e-3, `dt_mm` inf) steps across the whole solenoid
+    and finds little of either (RF-Track 2.7.4; 2.7.3 too, less so).
+    """
+    import math
+
     import numpy
     import RF_Track as rft
-    from pykern import pkunit
 
-    peak_t = 0.04
-    bz = peak_t * numpy.exp(-(numpy.linspace(-1, 1, 101) ** 2) * 8)
+    bz = 0.04 * numpy.exp(-(numpy.linspace(-1, 1, 101) ** 2) * 8)
     sol = rft.Static_Magnetic_FieldMap_1d(bz, 0.01)
     v = rft.Volume()
     v.add(sol, 0, 0, 0, 0, 0, 0)
     v.set_s0(0.0)
     v.set_s1(sol.get_length())
-    i, o = _track(v)
-    radial = (i[:, 0] * (o[:, 1] - i[:, 1]) + i[:, 2] * (o[:, 3] - i[:, 3])).sum() / (
-        i[:, 0] ** 2 + i[:, 2] ** 2
-    ).sum()
-    expect = -numpy.trapezoid(bz**2, dx=0.01) / (4 * _brho_t_m() ** 2)
-    numpy.testing.assert_allclose(radial, expect, rtol=0.05)
-    pkunit.pkok(radial < 0, "expected focusing, got {}", radial)
+    v.dt_mm = 1.0
+    m = _transfer_matrix(v)
+    # an electron in a positive Bz rotates from x toward -y
+    numpy.testing.assert_allclose(
+        math.atan2(-m[0, 2], m[0, 0]),
+        numpy.trapezoid(bz, dx=0.01) / (2 * _brho_t_m()),
+        rtol=0.01,
+    )
+    numpy.testing.assert_allclose(
+        [m[1, 0], m[3, 2]],
+        -numpy.trapezoid(bz**2, dx=0.01) / (4 * _brho_t_m() ** 2),
+        rtol=0.01,
+    )
 
 
 def _brho_t_m():
@@ -144,3 +156,22 @@ def _track(element):
     i = s.initial_bunch.get_phase_space(_FIELDS)
     s.track()
     return i, s.tracked_bunch.get_phase_space(_FIELDS)
+
+
+def _transfer_matrix(beamline):
+    """`beamline`'s 4x4 (x [mm], xp [mrad], y, yp) transfer matrix: a
+    reference particle on axis and one displaced 1 mm or 1 mrad in each
+    coordinate, differenced. Column k is the response to coordinate k."""
+    import numpy
+    import RF_Track as rft
+
+    from lume_rftrack.simulator import RFTrackSimulator
+
+    p = numpy.zeros((5, 10))
+    p[:, 5:9] = (_PC_MEV, rft.electronmass, -1.0, 1.0)
+    p[:, 9] = range(5)
+    p[1:, :4] = numpy.eye(4)
+    s = RFTrackSimulator(beamline, rft.Bunch6d(p))
+    s.track()
+    o = s.tracked_bunch.get_phase_space(_FIELDS)
+    return (o[1:] - o[0]).T

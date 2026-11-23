@@ -70,7 +70,7 @@ UNITS = PKDict(
     direction="1",
     entrance_aperture="m",
     exit_aperture="m",
-    # an SBend's fringe field integral, measured by archive._fint()
+    # an SBend's fringe field integral, measured by archive_elements._fint()
     fint="1",
     frequency="Hz",
     gradient="T/m",
@@ -98,6 +98,9 @@ UNITS = PKDict(
     # RF-Track time-like quantity (t0, set_time_window(), sigma_t), all
     # documented as "mm/c".
     resolution_t="mm/c",
+    # archive's own (archive(strict=False)): a field difference over the
+    # largest field
+    restore_field_error="1",
     sc_nsteps="1",
     scaling_factor="1",
     shape=None,

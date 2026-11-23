@@ -11,7 +11,7 @@ def test_every_element_attribute_is_in_the_table():
     import RF_Track as rft
     from pykern import pkunit
 
-    from lume_rftrack.archive import _attributes
+    from lume_rftrack.archive_elements import attributes
     from lume_rftrack.units import unit
 
     missing = set()
@@ -30,7 +30,7 @@ def test_every_element_attribute_is_in_the_table():
             # no constructor without arguments: archived only through a
             # _constructor_args_<class>()
             continue
-        for a in _attributes(e):
+        for a in attributes(e):
             try:
                 unit(c, a)
             except KeyError:
